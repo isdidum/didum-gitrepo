@@ -1,0 +1,45 @@
+# August 29, 2018 at 10:26PM CST 
+# By A., Didum
+# Consult: https://www.gitignore.io/
+# During creation, select 'netbeans' from the list of options
+# Hash-tag is a way to comment in dot-git-ignore-file
+# The following are folders to be ignored
+# Created by https://www.gitignore.io/api/netbeans :: automated
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# End of https://www.gitignore.io/api/netbeans
+
+# additional comment
+project.xml
+project.properties
+
+# Ignore file name 'Gruntfile.js'
+Gruntfile.js
+
+# Ignore node-config-file
+config.txt
+
+# Ignore locked package
+package-lock.json
+
+# Ignore node_modules files
+node_modules
+
+# Ignore dot-jshintrc-file
+.jshintrc
+
+# Ignore dot-babelrc-file
+.babelrc
+
+# Ignore all folders in public folder
+public/*
+
+# Ignore private folder
+private/*.js

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Business Card Info</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+        <meta name="description" content="" />
+        <link type="text/css" rel="stylesheet" href="../css/iview.css" />
+        <link rel="shortcut icon" type="image/gif" href="../assets/img/question.gif"/>
+        
+        <script type="text/javascript" src="../jss/update.js"></script>
+        <script type="text/javascript" src="../jss/imodel.js"></script>
+        <script type="text/javascript" src="../jss/icontrol.js"></script>
+		<script type="text/javascript" src="../jss/card.js"></script>
+        <script type="text/javascript">window.onload = BusinessCard; </script>
+    </head>
+    <body style="background-color: white;">
+        <div style="background-color: white; border: 1px solid black; width: 60%; margin-left:auto; margin-right:auto;">
+            <header>
+                <h3 align="center">Business Card Web Solution</h3>
+            </header>
+            <table class="table"><!--see css for table details-->
+                <tr><th>Name<font style="color: red; font-family: bold;">*</font></th> <th>Title</th> <th>Phone</th> <th>Email</th>
+                    <td rowspan="3" align="center" style="background:skyblue;">
+                        <input id="cbox" name="cbox" type="checkbox" title="Turn on query field." onclick="ienable();"/>Activate
+                        <br /><input id="find" name="find" type="text" onkeypress="ienter(event);" title="Query by name." disabled="true" maxlength="20" placeholder="Query by name." size="12" onfocus=""/>
+                        <br /><input type="button" onclick="iquery();" value="Query" title="Queries a record."/>
+                    </td>
+                </tr>
+                <tr><td align="center"><input id="name" type="text" size="12" maxlength="30" placeholder="Full name" title="User's full-name"/></td>
+                    <td align="center"><input id="jtitle" type="text" size="12" maxlength="30" placeholder="Job title" title="User's job title" onfocus=""/></td>
+                    <td align="center"><input id="phone" type="text" size="12" maxlength="12" placeholder="###-###-####" title="User's phone" onfocus=""/></td>
+                    <td align="center"><input id="email" type="text" size="12" maxlength="35" placeholder="Sample@gmail.com" title="User's email" onfocus=""/></td>
+                </tr>
+                
+                <tr><th>Company</th> <th>Address</th> <th>City</th> <th>State</th></tr>
+                <tr><td align="center"><input id="org" type="text" size="12" maxlength="25" placeholder="Name" title="Company's name" onfocus=""/></td>
+                    <td align="center"><input id="addy" type="text" size="12" maxlength="25" placeholder="Address" title="Company's address" onfocus=""/></td>
+                    <td align="center"><input id="city" type="text" size="12" maxlength="30" placeholder="City name" title="Company's city" onfocus=""/></td>
+                    <td align="center"><input id="state" type="text" size="12" maxlength="2" placeholder="State name" title="Company's state" onfocus=""/></td>
+                    <td align="center"><button title="Adds or saves a record" onclick="iadd();">Add</button></td>
+                </tr>
+                
+                <tr>
+                    <th align="center">Representative</th>
+                    <td align="center"><input id="rep" type="text" size="12" maxlength="15" placeholder="Client's rep" title="Client's representative" onfocus=""/></td>
+                    <th align="center">Zip-code</th>
+                    <td align="center"><input id="zip" type="text" size="12" maxlength="5" placeholder="Company's zip" title="Compnay's zip-code" onfocus=""/></td>
+                    <td align="center"><button onclick="imodify();" title="Updates or modifies a record.">Modify</button></td>
+                </tr>
+                
+                <tr>
+                    <th align="center">URL</th>
+                    <td colspan="3"><input id="url" type="text" size="50" maxlength="55" placeholder="Company's web url" title="Company's url" onfocus=""/></td></td>
+                    <td align="center"><button onclick="iremove();" title="Deletes a record.">Delete</button></td>
+                </tr>
+                
+                <tr><th align="center">Current Index</th>
+                    <td align="center"><input id="indexc" type="text" disabled="true" size="12" onfocus=""/></td>
+                    <th align="center">Current Count</th>
+                    <td align="center"><input id="countc" type="text" disabled="true" size="12" onfocus=""/></td>
+                    <td align="center"><button onclick="itray(1);" ondblclick="itray(0);" title="Empties recycle bin.&#013;Click to view bin. &#013;Double-click to clean & hide.">
+                            <img src="../assets/img/cancel.gif"  width="18" height="15">
+                        </button></td>
+                </tr>
+                
+                <tr>
+                    <td align="center"><button title="First record." onclick="ifirst();"> << </button></td>
+                    <td align="center"><button title="Previous record." onclick="iprevious();"> < </button></td>
+                    <td align="center"><button title="Next record." onclick="inext();"> > </button></td>
+                    <td align="center"><button title="Last record." onclick="ilast();"> >> </button></td>
+                    <td align="center"><button title="Clears a record." onclick="iclear();">Clear</button>
+                        <button id="rbin" onclick="ibin(true);" ondblclick="ibin(false);" title="Recycle bin: shows deleted records. &#013;Click to view. &#013;Double-click to hide."/>
+                            <img src="../assets/img/trash.gif"  width="18" height="14">
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            
+            <div id="idiv">
+                <span style="text-decoration:none; text-align:center; position:relative; left:25%; z-index:400; color:rgb(200,200,200); font-size: 10pt;">
+                    <textarea id="bin" name="bin" rows="4" cols="36" placeholder="Deleted records!" wrap="hard" disabled="false"></textarea>
+                </span>
+            </div>
+            
+            <footer>
+                 <span id="sfooter" style="text-decoration:none; text-align:center; position:relative; left:25%; z-index:400; color:rgb(200,200,200); font-size: 9pt;">
+                    <script type="text/javascript">
+                        function addDate() {
+                           var str = "Contact: A., Didum <a href='mailto:iusc13@hushmail.com?subject=Questions/Comments'>iusc13</a> with questions/concerns/suggestions.";
+                           new DateObject('25 Jul 2014', 'sfooter', str);
+                        }
+                        if (addDate()) addDate();
+                    </script>
+                </span>
+            </footer>
+        </div>
+    </body>
+</html>

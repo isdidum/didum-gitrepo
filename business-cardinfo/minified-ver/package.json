@@ -1,0 +1,132 @@
+{
+    "name": "business-cardapp",
+    "appName": "Business-Card App",
+    "version": "0.0.2",
+    "private": true,
+    "title": "Node-JS Business Card Web Solution Application",
+    "author": "Abraham, Didum <iusc13@hushmail.com>",
+    "description": "The Business-Card App serves to demostrate a web solution methodology to storing business cards as opposed to usng Microsoft Excel Spreadsheet.",
+    "contentNotes": "The application is widget-driven non-static content",
+    "keywords": [
+        "util",
+        "functional",
+        "server",
+        "client",
+        "browser",
+        "debug",
+        "syntax",
+        "gruntplugins",
+        "compiler",
+        "business card",
+        "business card info",
+        "command line interface",
+        "cli",
+        "es6",
+        "es5",
+        "uglify",
+        "jshint",
+        "concat",
+        "watch",
+        "git",
+        "clean",
+        "babel"
+    ],
+    "platform": [
+        "HTML/5",
+        "CSS/3",
+        "DHTML",
+        "JSON",
+        "JavaScript",
+        "Node-JS",
+        "jQuery",
+        "XML"
+    ],
+    "IDE": "NetBeans",
+    "versionNote": [
+        {
+            "release": "0.0.2",
+            "remarks": "This is the production version pushed for pupblication purposes."
+        },
+        {
+            "internal": "0.0.2-alpha",
+            "remarks": "This is the internal locally owned copy by developer/maintenance personal."
+        }
+    ],
+    "contributors": [
+        "A., Didum"
+    ],
+    "dependencies": {},
+    "main": "Gruntfile.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "build": "babel --presets-env src -d publish"
+    },
+    "files": [
+        "tasks"
+    ],
+    "engines": {
+        "node": ">=0.6"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iusc13/gitrepo.git",
+        "homepage": "https://github.com/iusc13.gitrepo#readme"
+    },
+    "bugs": {
+        "url": "https://github.com/iusc13.gitrepo#issues"
+    },
+    "website": "",
+    "bio": [
+        {
+            "name": {
+                "pen": "Abraham, Didum",
+                "short": "A., Didum"
+            }
+        },
+        {
+            "email": "iusc13@hushmail.com"
+        },
+        {
+            "education": "BS,Engineering,ISU"
+        },
+        {
+            "codename": "Research and Development (R&D)"
+        },
+        {
+            "location": "612 S 16th St, Ames, IA 50010 USA"
+        }
+    ],
+    "sponsoredBy": {
+        "company": "Diagnostic Systems Research Institute (DSRI), LLC",
+        "website": "http://www.dsrigroup.com"
+    },
+    "license": "MIT",
+    "licenseInfo": {
+        "website": "https://spdx.org/licenses/MIT.html",
+        "name": "The MIT License",
+        "version": ">=2.0",
+        "valid-spdx-license": "https://spdx.org/licenses/"
+    },
+    "copyright": "(c) Dec 21, 2014 - present",
+    "devDependencies": {
+        "babel-cli": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "grunt": "^1.0.3",
+        "grunt-babel": "^7.0.0",
+        "grunt-contrib-clean": "^1.1.0",
+        "grunt-contrib-concat": "^1.0.1",
+        "grunt-contrib-copy": "^1.0.0",
+        "grunt-contrib-cssmin": "^2.2.1",
+        "grunt-contrib-htmlmin": "^2.4.0",
+        "grunt-contrib-jshint": "^1.1.0",
+        "grunt-contrib-uglify": "^3.4.0",
+        "grunt-contrib-watch": "^1.1.0",
+        "grunt-min": "^0.1.0",
+        "grunt-minified": "0.0.6",
+        "grunt-textfile": "^0.2.0",
+        "load-grunt-tasks": "^4.0.0"
+    },
+    "homepage": "https://github.com/iusc13/gitrepo#readme"
+}

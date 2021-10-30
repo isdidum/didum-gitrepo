@@ -1,0 +1,62 @@
+/** 
+ *   Created on : Jul 26, 2014, 8:02:39 AM
+ *   Author     : A., Didum
+ */
+
+body {
+    width: 100%;
+    height: 100%;
+}
+.table,th,td,tr {
+    margin-left: auto;
+    margin-right: auto;
+    border-spacing: 1px;
+    padding: 1px;
+    border: 1px solid green;
+    border-collapse: separate;
+    
+    /*Mozilla Firefox round-style*/
+    -moz-border-radius: 5.5px;
+    /*IE round-style*/
+    border-radius: 5.5px;
+    /*Safari and Chrome round-style*/
+    -webkit-border-radius: 5.5px;
+}
+
+th,tr {
+    background-color: rgb(107, 110, 255); //skyblue
+}
+
+#find,#name,#jtitle,#phone,#email,#zip,#rep,#indexc,#countc,#addy,#org,#city,#state,#url {
+    border: 2px solid #000000;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #ffffff; /*EFEFEF #FF9900*/
+    /*Mozilla Firefox round-style*/
+    -moz-border-radius : 5.5px;
+    /*IE round-style*/
+    border-radius: 5.5px;
+    /*Safari and Chrome round-style*/
+    -webkit-border-radius: 5.5px;
+    -moz-border-radius: 5.5px
+}
+
+#find,#countc,#indexc {
+    background-color: #eeddee; //overrides bgcolor #eeeedd or eeddee
+}
+
+#name:hover,#jtitle:hover,#phone:hover,#email:hover,#zip:hover,
+#rep:hover,#addy:hover,#org:hover,#city:hover,#state:hover,#url:hover {
+    border: 2px solid blue;
+    background-color: yellow;
+}
+
+#bin {
+    background-color: #eeeeee; resize: none; display: none;
+    /*margin: 0px 150px 0px 150px; //margin: top right bottom left*/
+}
+
+#idiv {
+    text-decoration:none; text-align:center; position:relative; 
+    color:rgb(200,200,200); font-size: 10pt; border: 0px solid black;
+}
