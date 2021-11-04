@@ -1,0 +1,6 @@
+#14 April 2013
+dbUrl = jdbc:mysql://localhost:3306/
+dbName = jdatabase
+dbUserName = root
+dbPassword = ben478913
+dbDriver = com.mysql.jdbc.Driver

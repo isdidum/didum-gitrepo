@@ -1,0 +1,6 @@
+#14 April 2013
+dbUrl = jdbc:mysql://localhost:3306/
+dbName = dbdidum
+dbUserName = root
+dbPassword = didum13
+dbDriver = com.mysql.jdbc.Driver

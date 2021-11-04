@@ -1,0 +1,4 @@
+Mickey:Mouse:21:California
+Donald:Duck:19:Nevada
+George:Clooney:55:Virginia
+Mega:Man:11:Washington

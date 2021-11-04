@@ -1,0 +1,378 @@
+|++++++++++++++++++++++++++++++++++++++++++++
+|  Fundamentals of Java Terminology	    |
+|  with Development Standard		    |
+|  @author: A., Didum D.                    |
+|  Date: Friday, March 16, 2012             |
+|++++++++++++++++++++++++++++++++++++++++++++
+
+
+1.	Useful Java Terms
+	[a] Superclass = Baseclass = Parentclass
+	[b] Subclass = Derived class = Childclass
+	[c]	Java is strictly passed by value and not passed by reference
+2. Checked Exceptions
+	[a] the compiler checks if your program handles them either by catching them or
+	[b] by using throws clause
+3. Unchecked Exceptions
+	[a] the compiler does not do the check, so you are required to catch them or
+	[b] specify the throw clause
+4.	Object
+	[a] an instance of a class
+    [b] has behavior as defined by its methods
+    [c] has state as in at any moment its instance variables have a particular value
+    [d] has identity which is handled behind the scenes by Java Virtual Machine (JVM) 
+5.	Constructor 
+	[a] One or more methods that indicate how to initiate/initialize a new object 
+    [b] the principal purpose of a constructor is to initialize the instance variable of a newly instantiated object
+    [c] activated when the keyword-new is invoked (hence, JVM knows automatically)
+	[d] the constructor is what runs when a class gets instantiated
+    [e] a constructor does not have a return type but one can have constructor overloading
+	[f] a constructor bears same name as its class
+	[g] a default constructor is constructor without any parameters
+	[h] constructors can be defined as many times as possible provided:
+      [1] each has a unique parameter list
+      [2] each constructor must have the same name as its class
+6.	When Messages Are Sent in a Class
+    [a] the receiver is server of an object (example: server code = external files contain classes/methods)
+		[1] the server's data requirements and implementation of its methods are hidden from client
+    [b] the sender is client of an object (example: client code = main html source file)
+		[1] the client only needs to know the server's interface
+7. final 
+	[a] variable - a final variable remains the same throughout program execution
+	[b] method - a final method cannot be overridden
+	[c] class - a final class cannot be extended or subclassed
+	[d] never use final in conjuction with abstract
+8. finally
+	[a] a keyword used in exception handling
+	[b] a block of code to be executed after a try-catch block has completed
+	[c] the finally block always executes whether or not an exception is thrown in the try-catch block
+9. finalize()
+	[a] finalize method is used just before an object is destroyed
+	[b] is called just prior to garbage collection by the Garbage Collector method [gc()]
+10. instance
+	[a] variables 
+		[1] variables not declared with static-keyword (or non-static fields)
+		[2] are things an object knows about itself
+		[3] can be used by all methods of a class except methods marked with "static" modifier
+		[4] a class must first be instantiated in order to refer to instance variables
+	[b] methods
+		[1] methods not declared with static-keyword
+		[2] a class must first be instantiated in order to refer to instance methods
+11. Instantiation
+	[a] process of creating a new object
+12. static
+	[a] variables 
+		[1] information to be shared among all instances of a class 
+	[b] methods
+		[1] allow access to static variables
+13.	Parameter
+	[a] aka formal parameter - a variable name to pass/transmit data to a method
+    [b] variables list defined within a method's definition
+14.	Argument
+	[a] aka actual parameter - a value or an expression passed to a method when it is invoked 
+15.	Enum 
+	[a] a class that represents fixed set of constants (FSC)
+	[b] names of an enum type are written in all uppercase letters
+	[c] example of FSC names:
+		[1] all nine planets; money: PENNY, NICKLE, DIME, & QUARTER
+		[2] all seven days per week
+		[3] all twelve months per year
+		[4] all four directions (North, South, East, West) etc..
+16.	Block scope 
+	[a] variables declared within any compound statement by braces
+    [b] example: for(int i = 0; I < 5; i++){variables declared here & in for() are BScope}
+17.	Void methods 
+	[a] indicate that the methods in fact return no value and no return statement used
+18.	Accessors
+	[a] methods with return statements
+	[b] example: public String myStr(str){ return str;}
+19.	Mutators
+	[a] methods that are void and do not have return statements
+	[b] example: public String myStr(str){ sop(str);}
+20.	8-Primitive Data Type
+	[a] short, byte, long, int, double, float, char, boolean
+21. 8-Wrapper Classes (Object Type)
+	[a] Short, Byte, Long, Int, Double, Float, Character, Boolean
+	[b] Wrapper class is a wrapper around a primitive data type
+	[c] all 8-wrapper classes are immutable (cannot changed or modified)
+22.	Reference Data Type 
+	[a] classes, strings, arrays, scanner, & instances of objects
+23.	Garbage Collection 
+	[a] the process of deleting unreferenced objects from memory
+	[b] it can never be forced but required using gc()
+24. Asbstract
+	[a] method
+		[1] its definition or body implementation cannot be supplied in abstract class
+		[2] its body implementation is to provided in a non-abstract subclass of the superclass
+	[b] variable
+		[1] an abstract variable in abstract class can reference an existing subclass object
+25.  Method 
+	[a] Definition
+		[1] a behavioral element of an object
+		[2] aka, algorithm, function, and procedure
+	[b] Overload
+		[1] when in a class, methods have the same name but different formal-parameter types
+	[b] Override
+		[1] in a subclass, a method has different functionality than the parent's method, but with same
+			[Ai] name,
+			[Bi] return type, and
+			[Ci] parameter types
+26. Access Modifiers
+	[a] Visibility of members
+	--------------------------------------------------
+	modifier  |	same class | same package |	universe
+	----------|------------|--------------|-----------
+	private	  |	yes		   | ---  		  |	---
+	----------|------------|--------------|-----------
+	default	  |	yes		   | yes		  |	---
+	----------|------------|--------------|-----------
+	protected |	yes		   | yes		  |	---
+	----------|------------|--------------|-----------
+	public	  |	yes		   | yes		  |	yes
+	--------------------------------------------------
+	[b] Member restriction
+	--------------------------------------------------
+	modifier  |	this   | package | subclass | general
+	----------|--------|---------|----------|---------
+	private	  |	yes	   | ---  	 |	--- 	| ---
+	----------|--------|---------|----------|---------
+	default	  |	yes	   | yes	 |	---		| ---
+	----------|--------|---------|----------|---------
+	protected |	yes	   | yes	 |	yes		| ---
+	----------|--------|---------|----------|---------
+	public	  |	yes	   | yes	 |	yes		| yes
+	--------------------------------------------------
+/*****************************************************************************
+ * 			Object Oriented Programming: Concepts
+ *****************************************************************************/
+27.	Class (or concrete class)
+	[a] a template that describes an object or a blue-print of an object
+    [b] a class can implement more than one interface
+	[c] a class can be extended one at a time
+    [d] a class can implement methods in additions to those public methods listed in an interface
+    [e] Instance Variable - a variable declarations that define an object's data requirement
+        [1] the principal purpose of an instance variable is to maintain information in an object
+        [2] it belongs to an object
+    [f] Method - a function that define its behavior in response to messages
+28. Subclass
+	[a] a subclass constructor doe snot explicitly invoke a superclass construtor, Java automatically
+		invokes the superclass's default constructor to initialize the superclass attributes
+	[b] a subclass can only access public members of a superclass but not private members
+	[c] if a subclass overrides a method, the subclass can access the overridden method using keyword-super
+	[d] classes in the same package can access each other's public, protected, and default members
+	
+29.	Inheritance
+	[a] the ability to define the behavior of one object in terms of another by subclassing or
+	[b] the ability to define a new class using existing class as a basis
+		[1] the new class is called subclass and the existing class is the superclass
+		[2] this subclass inherits attributes and behaviors of the class which it is based, the superclass 
+	[c] inheritance is based primarily on keyword extends
+	[d] Java supports single inheritance - a subclass can be extended directly one at a time from the superclass
+30.	Polymorphism
+	[a] subclasses of a class define their own unique behaviors and yet share the same functionality of the parent class
+    [b] benefit: it makes it easier for programmers to memorize and redevelop fewer names of methods
+31. Encapsulaion
+	[a] can be described as a protective barrier that prevents the code and data from being ramdonly accessed 
+		by other code defined outside the class; or
+	[b] the process of separating the component of an object into internal and external aspects
+		[1] external - these aspects of the object need to be visible to other objects in the system
+		[2] internal - these are details that should not affect other parts of the system
+			(i) hiding the internal aspects of the object means that they can be changed without
+				requiring changes to other parts of the system
+	[c] Consider a radio as an example
+		[1] external aspects are the controls and the types of connectors needed to hook the radio the 
+			electrical system, the speakers, and the antenna.
+		[2] internal aspects are the details of how the radio works.
+	[d] benefit: it simplifies making changes
+32.	Abstract class
+	[a] allows you to define a superclass that declares the structure of a given abstraction without providing a complete implementation
+	[b] in other words, you created a superclass in generalized form with details and implementations to be completed in a subsclass. 
+	[c] a class that must never be instantiated
+	[d] this class exist as a superclass of other classes
+	[e] can have both concrete and abstract methods 
+	[f] there no restrictions on the kind of variables an abstract class defines
+    [g] sole purpose is so it be extended to define features and behaviors common to its subclass
+	[h]	example of an Abstract class
+		abstract class MySuperA {
+			abstract void foo(int a, int b);// foo(): abstract method with no implementation (no body)
+			public void bar(int a,int b){};	// bar(): concrete method with no implementation (no body)
+			public String boo(String str){	// boo(): concrete method with implementation (has body)
+				return str;
+			}
+		}
+	[i] exmaple of concrete subclass
+		public class MySubB extends MySuperA {
+			//MySubB(): default constructor
+			public MySubB(){}
+			
+			public void foo(int a,int b){	//foo() now has body
+				int abplus = a+b;
+			}
+			
+			public void bar(int a,int b){	//boo() now has body
+				double abplus = (double)a+b;
+			}
+			
+			public String bar(String str){	//boo() now has body
+				return  str;
+			}
+		}
+	[j] example of client class: assumes MySuperA(), MySubB(), and MyClient() are all under same package
+		public class MyClient{
+			MySubB sub = new MySubB();	//invokes childclass, MySubB()
+			sop(sub.foo(1,2));			//sop = System.out.println();
+			sop(sub.bar(1,2));
+			sop(sub.boo("string"));
+		}
+33.	Interface
+	[a] allows you to specify a set of method that can be implemented by one or more classes
+	[b] contains list of public methods and variables that are available to the client of a class
+    [c] can have only abstract methods and cannot be instantiated
+	[d] sole purpose of an interface is so it can be implemented
+	[e] public static final: implicit modifier required for all interface variables
+	[f] example of an Interface
+		Public interface IfaceA {
+			public static final double PI = 3.141596;
+			public double add1(int a, int b);
+			public void foo();
+		}
+		Public interface IfaceB {
+			public static final double E = 2.71828;
+			public double add2(int a, int b);
+		}
+	[g] example of concrete class
+		public class Icrt implements IfaceA, IfaceB{
+			//default constructor()
+			public Icrt(){}
+			
+			public void foo(){
+				sop("This is foo() method.");
+			}
+			
+			public double add1(int i, int j){
+				return (i+j) * PI / E;
+			}
+			
+			public double add2(int i, int j){
+				return (i+j) * E / PI;
+			}
+		}
+	[h] example of client class:  assumes IfaceA(), IfaceB(), Iclient() are  all under same package	
+		public class Iclient{
+			public static final int SIZE = 5;	//constant variable declaration
+			Icrt  myIcrt = new Icrt()
+			myIcrt.foo();
+			sop("addition1: " + (myIcrt.add1(2,3) + SIZE));
+			sop("addition2: " + (myIcrt.add2(3,2) + SIZE));
+		} 
+34. Stub 
+	[a] a class that does not require method's code implementation
+    [b] a set of skeletal list of variables and methods, for example:
+		Public Class myStub {
+			private int variable1, variable2;
+			public void mutator1(int valuein){}
+			public void mutator2(int valueint){}
+			public int accessor1(){
+			return 0;
+			}
+		}
+35. extends
+	[a] Java's mechanism for deriving a new class from an existing class
+	[b] used in an interface declaration to specify one or more superinterfaces
+36. implements
+	[a] included in a class declaration to specify one or more interfaces that are implemented by the current class. 
+    	[b] a class inherits the types and abstract methods declared by the interfaces
+37. super
+	[a] Java's mechanism to explicitly invoke superclass constructor for the object under construction
+	[b] normally, this happens in a subclass
+38. this 
+	[a] marks public declaration of variables/methods
+	[b] contains current instance of an object reference
+39. Types of Error in Java
+	[a] compilation errors - consists of syntax and semantic errors and are detected during the compilation process 
+	[b] runtime errors - occur when program is running and harder than compilation errors to diagnose and fix
+	[c] logic errors - hardest kind of errors to fix - when a program produces incorrect output or fails to work as intended
+		[1] Java provides runtime checks and exceptions mechanism:
+			(ai) NullPointerException
+			(bi) IOException
+			(ci) IndexOutOfBoundException
+			(di) ArithmeticException
+40. 	Marker Interface
+	[a] a marker interface is an interface which  has no methods at all.
+	[b]	Example: Serializable, Remote, Cloneable.
+	[c] Generally, they are used to give additional information about the behavior of a class
+41. Transient variable
+	[a] a variable which cannot be serialized
+42. Static variable
+	[a] a static variable is a global shared by all instances of objects and it has only a single copy
+43. Concrete Class - classes that extend Abstract Class and that are instantiated
+44. Flowchart - a diagram that illustrates the behavior of if and if-else statements
+45. Precondition - specifies what goes into a method (e.i. variables & parameters)
+46. Postcondition - describes what a method will result if preconditions are satisfied
+47. Iterator - An Interface that belongs to Java Collection Frameworks
+48. Name/Type 	Length 		Storage		Range	
+	byte 		8 bits 		*			-2^7 to 2^(7)-1 	or -128 to 127
+	short 		16 bits 	2 bytes		-2^15 to 2^(15)-1 	or -32,768 to 32,767
+	int 		32 bits		4 bytes		-2^31 to 2^(31)-1	or -2,147,483,648 to 2,147,483,647
+	long 		64 bits		8 bytes		-2^63 to 2^(63)-1	or -9,223,372,036,854,775,808 to +9,223,372,036,854,775,807
+	float 		32 bits		4 bytes		*					or 1.40129846432481707e-45 to 3.40282346638528860e+38
+	double		64 bits		8 bytes		*					or -1.7976931348623157E+308 to 1.7976931348623157E+308
+	char		*			2 bytes		*					or 0 to 65,535
+49. Java reserved words (keywords)
+	--abstract, assert, boolean, break, byte, case, catch, char, class, const, continue, default, do, double,
+	--else, enum, extends, false, final, finally, float, for, goto, if, implements, import, instanceof, int, interface,
+	--long, naitve, new, null, package, private, protected, public, return, short, static, strictfp, super, switch,
+	--synchronized, this, throw, throws, transient, true, try, void, volatile, while
+50. String class
+	[a] the String class is final (immutable in Java)
+	-------------------------------------------------------------
+	Types			 | character streams  | byte streams 
+	-----------------|--------------------|----------------------
+	Buffering		 | BufferedReader	  | BufferedInputStream
+					 | BufferedWriter     | BufferedOutputStream
+	-----------------|--------------------|----------------------
+	Filtering		 | FilterReader	   	  | FilterInputStream
+					 | FilterWriter	   	  | FilterOuputStream
+	-----------------|--------------------|----------------------
+	Converting betw. | InputStreamReader  |
+	byte and char.	 | OutputStreamWriter |
+	-----------------|--------------------|----------------------
+	Performing object| 					  | ObjectInputStream
+	serialization	 | 					  | ObjectOutputStream
+	-----------------|--------------------|----------------------
+	Peforming data	 |					  | DataInputStream
+	conversion		 |					  | DataOutputStream
+	-----------------|--------------------|----------------------
+	Counting		 | LineNumberReader	  | LineNumberInputStream
+	-----------------|--------------------|----------------------
+	Peeking ahead	 | PushbackReader	  | PushbackInputStream
+	-----------------|--------------------|----------------------
+	Printing		 | PrintWriter		  | PrintStream
+	-------------------------------------------------------------
+		
+/*****************************************************************************
+ * 			Developers Convention: Concepts
+ *****************************************************************************/
+1. Create packages in case-sensitive font (all lowercase)
+2. packages names should be short, but descriptive naming convention
+3. Within packages, create subpackages then create classes
+4. Classes are in camel-case font (first letter of every noun capitalized) 
+5. JVM runs .class file for each program created
+6. Always use SVN Repository (check-in/check-out code) to keep track of changes
+7. Start our every source code with a try-catch statement - makes it easier to spot exception early on
+8. Use prefix "is" for boolean methods
+	[a] example: public boolean isEmpty(){...}
+9. Use prefix "set" for setter methods
+	[a] example: public void setSize(){...}
+10. Use prefix "get" for getter methods
+	[a] example: public int getAmount(amt){return amt;}
+11. Use prefix "add" to clock-in or attach event listener
+	[a] example: public String addEventListener(){return "";}
+12. Use prefix "remove" to clock-out or deattach event listener
+	[a] example: public String removeEventListener(){ return "";}
+13 if statements
+	[a] always use curly braces to surround actions
+	[b] never compare floating-point values using the equality operators (1== 5*(.1+.1+.1+.1+.1))
+14. operators (increment/decrement)
+	[a] prefix: ++x; --x; x += 1
+	[b] posfix: x++; x--; x += 1
