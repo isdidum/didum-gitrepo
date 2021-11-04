@@ -10,24 +10,31 @@
 
 # ignores .svn extension file
 **/java-experiment/**/*.svn
+**/java-experiment/iexperiment/**/*.svn
 
 # ignores .metadata extension file
 *.metadata
 
 # ignores .factorypath
 **/java-experiment/iexperiment/**/*.factorypath
+**/java-experiment/jdbc/**/*.factorypath
 
 # ignores maven target directory
 **/java-experiment/iexperiment/**/target
+**/java-experiment/jdbc/**/target
 
 # ignores all .classpath file
 **/java-experiment/**/iexperiment/*.classpath
+**/java-experiment/**/jdbc/*.classpath
 
 # ignores all .project file
 **/java-experiment/iexperiment/**/*.project
+**/java-experiment/jdbc/**/*.project
 
 # ignores all .settings
 **/java-experiment/**/iexperiment/*.settings
+**/java-experiment/**/jdbc/*.settings
 
 # ignores all bin-folders
 **/java-experiment/iexperiment/**/bin
+**/java-experiment/jdbc/**/bin
