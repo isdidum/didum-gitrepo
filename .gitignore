@@ -9,25 +9,25 @@
 .gitignore
 
 # ignores .svn extension file
-*.svn
+**/java-experiment/**/*.svn
 
 # ignores .metadata extension file
 *.metadata
 
 # ignores .factorypath
-**/sts-training/**/*.factorypath
+**/java-experiment/**/*.factorypath
 
 # ignores maven target directory
-**/sts-training/**/target
+**/java-experiment/**/target
 
 # ignores all .classpath file
-**/sts-training/**/*.classpath
+**/java-experiment/**/*.classpath
 
 # ignores all .project file
-**/sts-training/**/*.project
+**/java-experiment/**/*.project
 
 # ignores all .settings
-**/sts-training/**/*.settings
+**/java-experiment/**/*.settings
 
 # ignores all bin-folders
-**/sts-training/**/bin
+**/java-experiment/**/bin
