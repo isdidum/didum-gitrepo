@@ -15,19 +15,19 @@
 *.metadata
 
 # ignores .factorypath
-**/java-experiment/**/*.factorypath
+**/java-experiment/iexperiment/**/*.factorypath
 
 # ignores maven target directory
-**/java-experiment/**/target
+**/java-experiment/iexperiment/**/target
 
 # ignores all .classpath file
-**/java-experiment/**/*.classpath
+**/java-experiment/**/iexperiment/*.classpath
 
 # ignores all .project file
-**/java-experiment/**/*.project
+**/java-experiment/iexperiment/**/*.project
 
 # ignores all .settings
-**/java-experiment/**/*.settings
+**/java-experiment/**/iexperiment/*.settings
 
 # ignores all bin-folders
-**/java-experiment/**/bin
+**/java-experiment/iexperiment/**/bin
