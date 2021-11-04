@@ -6,3 +6,28 @@
 # ---------------------------------------------
 
 # ignores dot-gitignore extension file
+.gitignore
+
+# ignores .svn extension file
+*.svn
+
+# ignores .metadata extension file
+*.metadata
+
+# ignores .factorypath
+**/sts-training/**/*.factorypath
+
+# ignores maven target directory
+**/sts-training/**/target
+
+# ignores all .classpath file
+**/sts-training/**/*.classpath
+
+# ignores all .project file
+**/sts-training/**/*.project
+
+# ignores all .settings
+**/sts-training/**/*.settings
+
+# ignores all bin-folders
+**/sts-training/**/bin
