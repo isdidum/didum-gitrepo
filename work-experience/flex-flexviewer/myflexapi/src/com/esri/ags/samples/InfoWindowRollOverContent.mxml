@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Used by InfoWindowRollOverSample.mxml -->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml">
+    <mx:String id="lat">0</mx:String>
+    <mx:String id="lon">0</mx:String>
+    <mx:Label text="Latitude: {lat}"/>
+    <mx:Label text="Longitude: {lon}"/>
+</mx:VBox>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Version 2.1.3 - Sept. 25, 2010
+//
+// This is a modifcation of ESRI Identify widget that was for SFV 1.x.
+// It has been modified, to use new spark component and a item renderer.
+// This version allows you to specify praticular layers of a map service
+// to identify and the particular fields to display for those layers.
+// This version also supports hyperlinks.
+// This version truly honors the setting of visible in the xml config.
+// If using a featurelayer it will identify the mapserver that is the 
+// same as the featurelayer and just force indentification of the specified
+// layer if there was one.
+//
+// Delevoped by Robert Scheitlin
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx"
+				autoDrawBackground="false"
+				click="itemrenderer_clickHandler(event)"
+				mouseOver="itemrenderer_mouseOverHandler(event)"
+				mouseOut="itemrenderer_mouseOutHandler(event)"
+				dataChange="itemrenderer_dataChangeHandler(event)"
+				minHeight="30"
+				toolTip="{zoom2msg}">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			private const ID_RESULT_CLICK:String = "idResultClick";
+			private const ID_RESULT_OVER:String = "idResultOver";
+			private const ID_RESULT_OUT:String = "idResultOut";
+			
+			[Bindable]
+			private var zoom2msg:String;
+			
+			[Bindable]
+			private var linkicon:String;
+			
+			[Bindable]
+			private var idResult:IdResult;
+			
+			private function itemrenderer_dataChangeHandler(event:FlexEvent):void
+			{
+				idResult = data as IdResult;
+				if(idResult){
+					zoom2msg = (idResult.zoom2msg != "")?idResult.zoom2msg:"Click to Zoom to Point";
+					linkicon = (idResult.linkicon != null)?idResult.linkicon:"assets/images/w_link.png";
+				}
+			}
+			
+			private function itemrenderer_mouseOverHandler(event:MouseEvent):void
+			{
+				dispatchEvent(new Event(ID_RESULT_OVER, true)); // bubbles
+			}
+			
+			private function itemrenderer_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(new Event(ID_RESULT_CLICK, true)); // bubbles
+			}
+			
+			private function itemrenderer_mouseOutHandler(event:MouseEvent):void
+			{
+				dispatchEvent(new Event(ID_RESULT_OUT, true)); // bubbles
+			}
+			
+			private function showLink(event:MouseEvent):void
+			{
+				event.stopImmediatePropagation(); // don't dispatch ID_RESULT_CLICK since we don't want to zoom to feature
+				navigateToURL(new URLRequest(idResult.link));
+			}
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+	</s:states>
+	
+	<!-- border/background rectangle -->
+	<s:Rect bottom="0"
+			left="0"
+			radiusX="4"
+			radiusY="4"
+			right="0"
+			top="0" >
+		<s:stroke>
+			<mx:SolidColorStroke alpha="{getStyle('borderAlpha')}"
+								 color="{getStyle('borderColor')}"
+								 weight="1"/>
+		</s:stroke>
+		<s:fill>
+			<mx:SolidColor alpha="0.3"
+						   alpha.hovered="0.8"
+						   color.hovered="{getStyle('rollOverColor')}"
+						   color.normal="{getStyle('contentBackgroundColor')}"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:HGroup minHeight="80"
+			  paddingLeft="5"
+			  paddingRight="5"
+			  paddingBottom="2"
+			  paddingTop="4"
+			  verticalAlign="middle"
+			  width="97%">
+		<mx:Image left="5"
+				  maxHeight="20"
+				  maxWidth="20"
+				  source="{idResult.icon}">
+			<mx:filters>
+				<mx:GlowFilter alpha="0.5"
+							   blurX="10"
+							   blurY="10"
+							   color="#000000"/>
+			</mx:filters>
+		</mx:Image>
+		<s:VGroup height="100%"
+				  verticalAlign="middle"
+				  width="100%">
+			<s:Label fontWeight="normal"
+					 fontWeight.hovered="bold"
+					 maxDisplayedLines="1"
+					 styleName="RecordText"
+					 text="{idResult.title}"
+					 width="100%"/>
+			<s:Label fontWeight="normal"
+					 styleName="RecordText"
+					 text="{idResult.content}"
+					 width="100%"/>
+			<!--s:Label id="infoLink"
+					 text="Hyperlink: {idResult.link}"
+					 width="100%"
+					 click="showLink(event)"
+					 includeInLayout="{idResult.link != null}"
+					 maxDisplayedLines="1"
+					 showTruncationTip="true"
+					 textDecoration="underline"
+					 visible="{idResult.link != null}"
+					 useHandCursor="true"/-->
+		</s:VGroup>
+		<mx:Image width="18" height="18"
+				  buttonMode="true"
+				  click="showLink(event)"
+				  includeInLayout="{idResult.link != null}"
+				  source="{linkicon}"
+				  useHandCursor="true"
+				  visible="{idResult.link != null}"/>
+		
+	</s:HGroup>
+</s:ItemRenderer>

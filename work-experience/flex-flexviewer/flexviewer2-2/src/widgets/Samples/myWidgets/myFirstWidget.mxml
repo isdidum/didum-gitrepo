@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<viewer:BaseWidget 
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:viewer="com.esri.viewer.*"
+	widgetConfigLoaded="init()">
+		
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+
+			
+			private var graphicPointSym:PictureMarkerSymbol;
+			private var mgraphicsLayer:GraphicsLayer;
+			
+			//this function called when the widget's configuration is loaded
+			private function init():void
+			{
+				if (configXML) // checking for valid content in the configuration file
+				{
+					lbl.text = configXML.content || getDefaultString("helloContent");
+				}
+			}
+
+			protected function myFW_openHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				map.addEventListener(MapMouseEvent.MAP_CLICK, mapClicked);
+			}
+			
+			private function mapClicked(event:MapMouseEvent):void {
+				lbl.text = "X: "+ event.mapPoint.x.toFixed(3) 
+					+ "\nY: "+ event.mapPoint.y.toFixed(3);
+			}
+
+			protected function myFW_closedHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				map.removeEventListener(MapMouseEvent.MAP_CLICK, mapClicked);
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<viewer:WidgetTemplate id="myFW" width="200" height="200"
+		open="myFW_openHandler(event);" closed="myFW_closedHandler(event);">
+		<viewer:layout>
+			<s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+		</viewer:layout>
+		
+		<s:Label id="lbl" fontSize="12" fontStyle="italic" fontWeight="normal"/>
+	</viewer:WidgetTemplate>
+	
+</viewer:BaseWidget>

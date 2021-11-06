@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Example - using layerDefinitions to only show subset of content from specific layers">
+    <!--
+         Layer definitions are sent to the server where the dynamic maps will use them for filtering.
+    -->
+    <s:layout>
+        <s:VerticalLayout gap="10"
+                          horizontalAlign="center"
+                          paddingBottom="20"
+                          paddingLeft="20"
+                          paddingRight="20"
+                          paddingTop="20"/>
+    </s:layout>
+
+    <s:Label fontSize="12"
+             fontWeight="bold"
+             text="Where are the young people?"/>
+    <s:Label width="100%" text="Showing states and counties with more young people (under 18 versus over 50)..."/>
+    <esri:Map>
+        <esri:extent>
+            <esri:Extent xmin="-13813000" ymin="3131000" xmax="-7676000" ymax="6363000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:ArcGISDynamicMapServiceLayer id="dyn" url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer">
+            <esri:layerDefinitions>
+                <!-- Layers in the order 0..x of the map service -->
+                <fx:Array>
+                    <fx:String></fx:String>
+                    <!-- Census block points -->
+                    <fx:String></fx:String>
+                    <!-- Census block groups -->
+                    <fx:String></fx:String>
+                    <!-- Counties -->
+                    <fx:String>
+                        <![CDATA[ AGE_UNDER5 + AGE_5_17 > AGE_50_64 + AGE_65_UP ]]>
+                    </fx:String>
+                    <!-- Coarse Counties -->
+                    <fx:String>
+                        <![CDATA[ AGE_UNDER5 + AGE_5_17 > AGE_50_64 + AGE_65_UP ]]>
+                    </fx:String>
+                    <!-- Detailed Counties -->
+                    <fx:String>
+                        <![CDATA[ AGE_UNDER5 + AGE_5_17 > AGE_50_64 + AGE_65_UP ]]>
+                    </fx:String>
+                    <!-- States -->
+                </fx:Array>
+            </esri:layerDefinitions>
+        </esri:ArcGISDynamicMapServiceLayer>
+    </esri:Map>
+</s:Application>

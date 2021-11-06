@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Developed by Abraham, Didum:didum.abraham@iowa.gov 
+	// Version 2.2 - May 11, 2011
+	////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:viewer="com.esri.viewer.*" 
+	xmlns:FacilityLctr="widgets.DotContainer.FacilityLctr.*"
+	layout="absolute" widgetConfigLoaded="init()">
+	
+	<fx:Script>
+		<![CDATA[
+
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.events.IdentifyEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.tools.DrawTool;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import flash.events.*;
+			
+			import mx.collections.*;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.ListEvent;
+			import mx.events.MoveEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.ResultEvent;
+			
+			//import spark.components.TitleWindow; //Spark Component (s-type)
+			private var graphicsExt:Extent;
+			private var identifyLabel:String;
+			[Bindable]private var mypointLabel:String;
+			[Bindable]private var lastIdentResultGraphic:Graphic;		
+			private var myDrawTool:DrawTool;
+			private var identMapPt:MapPoint;
+			private var keepActive:Boolean;
+			private var idntfyLyrOptn:String;
+			private var idntfyTolerance:Number = 3;
+			private var query:Query;
+			private var identifyParams:IdentifyParameters;
+			
+			public var gra:Graphic; 
+			[Bindable]private var lenFeature:Number = 0;
+			[Bindable]private var msgVisible:Boolean = false;
+			[Bindable]private var getLabel:String;
+			[Bindable]private var getSearch:String;
+			[Bindable]private var getToggle:String;
+			[Bindable]private var getResult:String;
+			[Bindable]private var getClearLbl:String;
+			[Bindable]private var getIdentClr:String;
+			[Bindable]private var getDescriptLbl:String;
+			private const myIconURL:String = "assets/images/";
+			
+			private function activateGraphic():void {
+				map.addLayer(myGraphicsLayer);
+			}
+			
+			private function init():void {
+				activateGraphic();
+				myDrawTool = new DrawTool();
+				myDrawTool.map = map;
+				myDrawTool.addEventListener(DrawEvent.DRAW_END, onDrawEnd);
+				
+				if(configXML) {
+					getLabel = configXML.labels.getlabel || "Specify search here...";
+					getDescriptLbl = configXML.labels.getdescriptlbl || "Use the identify tool to identify features on the map" +
+						" or click dumpster to clear map graphicslayer:";
+					getSearch = configXML.labels.getsearch || "Search"; 
+					getToggle = configXML.labels.gettoggle || "Layer";
+					getResult = configXML.labels.getresult || "Results";
+					getClearLbl = configXML.labels.getclearlbl || "Clear";
+					getIdentClr = configXML.labels.getidentclrlbl || "Identify/Clear";
+					mypointLabel = configXML.labels.mypointlabel || "Map Point Identify";
+										
+					keepActive = toBoolean(configXML.keepidentifyactive.toString());
+					idntfyLyrOptn = configXML.idntfylyroptn || IdentifyParameters.LAYER_OPTION_ALL;
+					if(Number(configXML.idntfytolerance) > 0)
+						idntfyTolerance = Number(configXML.idntfytolerance);
+				}
+				myWidgetTemp.addTitlebarButton(myIconURL + "i_search.png", getSearch, showBeginState);
+				myWidgetTemp.addTitlebarButton(myIconURL + "layer.png", getToggle, showToggleState);
+				myWidgetTemp.addTitlebarButton(myIconURL + "i_info.png", getIdentClr, showClearGraphic);
+				myWidgetTemp.addTitlebarButton(myIconURL + "i_table.png", getResult, showResultState);
+			}
+			
+			private function toBoolean(val:String):Boolean {
+				if(val == "true"){return true;} else {return false;}
+			}
+			
+			private function activateClick():void {
+				var status:String = mypointLabel;
+				if(!myDrawTool)
+					myDrawTool = new DrawTool();
+				myDrawTool.showDrawTips = false;
+				myDrawTool.markerSymbol = clickPtSym;
+				myDrawTool.activate(DrawTool.MAPPOINT);
+			}
+			
+			private function onDrawEnd(event:DrawEvent):void {
+				clearMap();
+				myGraphicsLayer.add(event.graphic);
+				identMapPt = event.graphic.geometry as MapPoint;
+				doIdentify();
+				if(keepActive)
+					activateClick();
+			}
+			
+			private function doIdentify():void 
+			{
+				map.alpha = 0.50;
+				identifyParams = new IdentifyParameters();
+				identifyParams.tolerance = idntfyTolerance; 
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = identMapPt; 
+				identifyParams.mapExtent = map.extent;
+				identifyParams.width = map.width;
+				identifyParams.height = map.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = map.spatialReference;
+				
+				doExecuteIdentify();
+				showMessage("Loading...", true);
+				showResultState();		//switch tab to show stateresult
+			}
+			
+			private function doExecuteIdentify():void {
+				identifyTask.execute(identifyParams, new AsyncResponder(onMyResult, onMyFault, null));
+			}
+			
+			private function onMyResult(results:Array, token:Object=null/*clickGraphic:Graphic=null*/):void {
+				if(results && results.length > 0) {
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;
+					
+					var mapPoint:MapPoint = identMapPt; //MapPoint(clickGraphic.geometry);
+					var myPoint:Point = map.toScreen(mapPoint);
+					
+					switch(resultGraphic.geometry.type) {
+						case Geometry.POLYGON: {						
+							
+							/* This allows the population of datagrid */					
+							/*var myFeatures2:ArrayCollection = new ArrayCollection();
+							for(var k:int = 0; k < results.length; k++){	
+							var cntr2:Number = (k+1);
+							bPanel.title = "Feature : " + results.length;
+							
+							myFeatures2.addItem(
+								{
+									COUNT: cntr2,
+									ADDRESS1: results[k].feature.attributes.ADDRESS1,
+									BUILDING_TYPE: results[k].feature.attributes.BUILDING_TYPE,
+									COST_CENTER: results[k].feature.attributes.COST_CENTER,
+									YEAR_BUILT: results[k].feature.attributes.YEAR_BUILT,
+									PHONE_NUMBER: results[k].feature.attributes.PHONE_NUMBER,
+									SQUARE_FOOTAGE: results[k].feature.attributes.SQUARE_FOOTAGE,
+									UKEY: results[k].feature.attributes.UKEY,
+									INVENTORY_NUMBER: results[k].feature.attributes.INVENTORY_NUMBER
+								}
+							);
+							*/
+							
+							var myResults:Array = []; //initializes an empty array
+							for (var i:int = 0; i < results.length; i++) {
+								myResults[i] = results[i].feature.attributes;
+							}
+							myGrid.dataProvider = myResults; //myFeatures2;
+							bPanel.title="Features : " + results.length;
+							myGrid.visible = true;
+							clearMessage();
+							break;
+						}
+					}
+					lastIdentResultGraphic = resultGraphic;					
+				}
+			}
+			
+			private function onMyFault(error:Object, token:Object=null/*clickGraphic:Graphic=null*/):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			
+			private function showMessage(msg:String, swfVisible:Boolean):void {
+				txtMessage.text = msg;
+				swfMessage.visible = swfVisible;
+				msgVisible = true;
+			}
+			
+			private function clearMessage():void
+			{
+				msgVisible = false;
+			}
+			
+			private function doQuery():void
+			{				
+				myGraphicsLayer.clear(); //clear graphicslayer first
+				query = new Query();
+				
+				if(rdBtn0.selected === true){ //CO_NAME LIKE '%FAYETTE%' works for COUNTY_BORDERS_SO w/ where-clause 
+					//query.returnGeometry = true; //converts to lowercase then queries [line below]
+					query.where = "UPPER (NEAR_CITY) LIKE UPPER ('%"+ fText.text + "%')"; 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn1.selected === true){
+					query.text = fText.text; //Inventory=ObjectID, there4 query.text 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn2.selected === true){
+					query.where = "YEAR_BUILT='"+ fText.text +"'"; //"ADDRESS1 LIKE '%"+ fText.text + "%'";
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}
+				
+				query.outSpatialReference = map.spatialReference;
+				query.returnGeometry = true;
+				doExecuteQueryNow();
+				showMessage("Loading...", true);
+				showResultState(); //call to function
+			}
+			
+			private function doExecuteQueryNow():void {
+				queryTask.execute(query, new AsyncResponder(onResult, onFault, null)); 
+			}
+			
+			private function onResult(featureSet:FeatureSet, token:Object = null):void {
+				try
+				{ 
+					lenFeature = featureSet.features.length;
+					if(lenFeature === 0) {
+						Alert.show("No data found. Please try again.");
+					} else {
+						
+						  //The only issue here is that it's hard to interacter with graphicslayer
+						 var myFeatures:ArrayCollection = new ArrayCollection();
+						 for (var i:int = 0; i < lenFeature; i++) {
+						 	var cntr2:Number = (i+1);
+							myFeatures.addItem(
+								{
+									//COUNT: cntr2,
+									ADDRESS1: featureSet.attributes[i].ADDRESS1,
+									BUILDING_TYPE: featureSet.attributes[i].BUILDING_TYPE,
+									COST_CENTER: featureSet.attributes[i].COST_CENTER,
+									YEAR_BUILT: featureSet.attributes[i].YEAR_BUILT,
+									PHONE_NUMBER: featureSet.attributes[i].PHONE_NUMBER,
+									SQUARE_FOOTAGE: featureSet.attributes[i].SQUARE_FOOTAGE, 
+									UKEY: featureSet.attributes[i].UKEY,
+									INVENTORY_NUMBER: featureSet.attributes[i].INVENTORY_NUMBER
+								}
+							);
+						}						
+						//var graphicsExt:Extent
+						graphicsExt = GraphicUtil.getGraphicsExtent(featureSet.features);
+						if(graphicsExt){
+							map.extent = graphicsExt.expand(4); //initial expansion
+							bPanel.title="Features : " + lenFeature; 
+							myGrid.dataProvider = myFeatures; //featureSet.attributes;//queryTask.executeLastResult.attributes
+							myGrid.visible = true; 
+							clearMessage();
+						}
+					}	
+				}
+				catch (error:Error)	{
+					showMessage(error.message, false);
+				}	
+			}
+				
+			//on fault
+			private function onFault(info:Object, token:Object = null):void {                    
+				showMessage(info.toString(), false);         
+			}	
+			
+			protected function onItemClick(event:ListEvent):void {
+				
+				findGraphicByAttributes(event.itemRenderer.data).symbol = sms_fExp;				
+			}
+			
+			/*
+			protected function onItemRollOver(event:ListEvent) : void
+			{
+			findGraphicByAttributes(event.itemRenderer.data).symbol = sfs_iExp;
+			}
+			*/
+			
+			public function findGraphicByAttributes(myAttr:Object):Graphic {
+				for each(var mGra:Graphic in myGraphicsLayer.graphicProvider){
+					/** 
+					 * Didum(5/12/2011)
+					 * Data objects in graphics.attributes not equal data objects in myAttr
+					 * all because of COUNT, hence, these comparison statements help me to bypass
+					 * event.itemRenderer.data error...keep active (myGrid.dataProvider = myFeatures)
+					 * iff 1st if-statement is to be used
+					 * */
+					if(mGra.attributes.ADDRESS1 === myAttr.ADDRESS1 
+						&& mGra.attributes.BUILDING_TYPE === myAttr.BUILDING_TYPE 
+						&& mGra.attributes.COST_CENTER === myAttr.COST_CENTER
+						&& mGra.attributes.INVENTORY_NUMBER === myAttr.INVENTORY_NUMBER 
+						&& mGra.attributes.PHONE_NUMBER === myAttr.PHONE_NUMBER 
+						&& mGra.attributes.SQUARE_FOOTAGE === myAttr.SQUARE_FOOTAGE 
+						&& mGra.attributes.YEAR_BUILT === myAttr.YEAR_BUILT
+						&& mGra.attributes.UKEY === myAttr.UKEY) {
+					//* */
+					//if(mGra.attributes === myAttr) {
+						map.extent = mGra.geometry.extent.expand(2.8); //final expansion
+						return mGra;
+					}
+				}
+				return null;
+			}
+			
+			private function clearMap():void {
+				identMapPt = null;
+				myGraphicsLayer.clear();
+			}
+			
+			private function showBeginState():void {
+				this.currentState = "beginState";
+				myWidgetTemp.width = 340; myWidgetTemp.height = 200;
+				map.addLayer(myDynamicSvc);
+				/**
+				 * if parcel is active, reduce it alpha value to allow buildings with no label
+				 * to be visible at the same time as parcels. 
+				 **/
+				if(myURL.selectedIndex === 1)
+					myDynamicSvc.alpha = 0.90;
+			}
+			
+			private function showToggleState():void {
+				this.currentState = "toggleLyrState";
+				myWidgetTemp.width = 340; myWidgetTemp.height = 200;
+				if(myURL.selectedIndex === 1)
+					myDynamicSvc.alpha = 0.90;
+			}
+			
+			private function showResultState():void {
+				this.currentState = "resultState";
+				myWidgetTemp.selectedTitlebarButtonIndex = 3; //index numbering begins at zero
+				myWidgetTemp.width = 520; myWidgetTemp.height = 250;
+			}
+			
+			private function showClearGraphic():void {
+				this.currentState = "clearGraphic";
+				myWidgetTemp.width = 340; myWidgetTemp.height = 200;
+			}
+
+			protected function wgtTempOpen(event:Event):void {
+				map.openHandCursorVisible = false;
+				myGrid.addEventListener(ListEvent.ITEM_CLICK, onItemClick);
+				showBeginState();
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = true;
+			}
+
+			protected function wgtTempClosed(event:Event):void {
+				myGraphicsLayer.clear();
+				myDrawTool.deactivate();
+				clearGraphic.visible = false;
+				toggleLyrState.visible = false;
+				resultState.visible = false;
+				myGrid.visible = false;
+				bPanel.title = "Features : 0";
+				map.removeLayer(myDynamicSvc);
+				myGrid.removeEventListener(ListEvent.ITEM_CLICK, onItemClick);
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = false;
+			}
+
+			protected function wgtTempMinimized(event:Event):void {
+				identMapPt = null;
+				myDrawTool.deactivate();
+				clearGraphic.visible = false;
+				toggleLyrState.visible = false;
+				resultState.visible = false;
+				//myGrid.visible = false;
+				//bPanel.title = "Features : 0";
+				//map.removeLayer(myDynamicSvc);
+				//myGrid.removeEventListener(ListEvent.ITEM_CLICK, onItemClick);
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = false;
+			}
+
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleLineSymbol id="ptOutline" style="solid" color="0xFFFFFF" width="1" alpha="0.8"/>
+		<esri:SimpleMarkerSymbol id="clickPtSym" outline="{ptOutline}" color="0xFF0000" size="12" style="circle"/>
+		
+		<!-- Identify Task -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" disableClientCaching="true" 
+			url="http://geonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer"/>
+		
+		<!--Fill Polygon with purple & draws solid blue line around Polygon on final expansion-->
+		<esri:SimpleFillSymbol id="sms_fExp" style="solid" alpha="0.80" color="0x6600FF">
+			<esri:SimpleLineSymbol width="4" color="0xFF0000" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Fill, draws solid red line around Polygon on initial expansion -->
+		<esri:SimpleFillSymbol id="sfs_iExp" alpha="0.20" style="solid">
+			<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Layer with US States: Point to Geonexus:01/12/2011-->
+		<esri:QueryTask id="queryTask" showBusyCursor="true"
+			url="http://geonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer/0"
+			useAMF="true"/>
+		
+		<!--GraphicsLayer-->
+		<esri:GraphicsLayer id="myGraphicsLayer" symbol="{sfs_iExp}" 
+			graphicProvider="{queryTask.executeLastResult.features}" />
+		
+		<!--ArcGISDynamicMapServiceLayer Didum: add to map -->
+		<esri:ArcGISDynamicMapServiceLayer id="myDynamicSvc" load="myDynamicSvc.defaultVisibleLayers()"
+			url="http://geonexus/ArcGIS/rest/services/{myURL.selectedItem}/MapServer" alpha="1.0"/>
+	</fx:Declarations>
+	
+	<viewer:states>
+		<s:State name="beginState" />
+		<s:State name="toggleLyrState" />
+		<s:State name="resultState" />
+		<s:State name="clearGraphic" />
+	</viewer:states>
+	<viewer:transitions>
+		<s:Transition autoReverse="true" toState="resultState">
+			<s:Fade targets="{[beginState, toggleLyrState, resultState, clearGraphic]}" />
+		</s:Transition>
+	</viewer:transitions>
+	
+	
+	<viewer:WidgetTemplate id="myWidgetTemp" width="340" height="200" open="wgtTempOpen(event)"
+		closed="wgtTempClosed(event)" minimized="wgtTempMinimized(event)">
+
+		<!--state1-->
+		<s:Group id="beginState" width="100%" height="100%" visible="false" visible.beginState="true">
+			<mx:HBox id="boxMessage" visible="{msgVisible}" includeInLayout="{msgVisible}" width="100%">
+				<!--Widget Loader-->
+				<mx:SWFLoader id="swfMessage" source="assets/images/loader.swf" visible="false" />
+				
+				<mx:Text id="txtMessage" text="" styleName="WidgetText" width="75%"/>
+			</mx:HBox>
+			
+			<mx:Text text="{getLabel}" width="100%" styleName="WidgetText" textAlign="center" fontWeight="normal"/>
+			
+			<mx:HBox top="20">	
+				<mx:TextInput id="fText" enter="doQuery();" text="Ames" focusColor="0xa2d2ff"
+					toolTip="Select a radio-button &#13; then enter some data here"/>
+				<mx:Button label="Getgrid..." click="doQuery();" />
+			</mx:HBox>
+			
+			<s:VGroup horizontalAlign="left" gap="5" left="15" top="50" color="0x000000">
+				<mx:RadioButton id="rdBtn0" selected="true" fontWeight="bold"
+					label="Search by City Name" labelPlacement="right"/>
+				<mx:RadioButton id="rdBtn1" selected="false" fontWeight="bold"
+					label="By Inventory Number" labelPlacement="right"/>
+				<mx:RadioButton id="rdBtn2" selected="false" fontWeight="bold"
+					label="Also by Year Built" labelPlacement="right"/>
+			</s:VGroup>
+		</s:Group>
+		
+		<!--state2-->
+		<s:Group id="toggleLyrState" visible="false" visible.toggleLyrState="true" top="30" left="20">
+			<s:DropDownList id="myURL" width="190" horizontalCenter="0" requireSelection="true"
+				selectedIndex="0" color="0x000000">
+				<s:ArrayList>
+					<fx:String>Facilities/BUILDING_SO_V</fx:String>
+					<fx:String>Facilities/PARCEL_SO_V</fx:String>
+				</s:ArrayList>
+			</s:DropDownList>
+		</s:Group>
+		
+		<!--state3-->
+		<s:Group id="resultState" visible="false" visible.resultState="true" width="100%" height="100%">
+			<mx:Panel id="bPanel" title="{'Features : ' + lenFeature}" width="100%" height="100%">
+				<mx:DataGrid id="myGrid" visible="false" itemClick="onItemClick(event)" horizontalScrollPolicy="auto"
+					width="100%" height="100%" editable="false"><!--width="480" height="100%" itemRollOver="onItemRollOver(event)"-->
+					<!--dataProvider="{queryTask.executeLastResult.attributes}" itemRollOut="onItemRollOut(event)"/>-->
+					<mx:columns>
+						<!--<mx:DataGridColumn width="15" headerText="#" dataField="COUNT"/> -->
+						<mx:DataGridColumn width="130" headerText="ADDRESS" dataField="ADDRESS1"/>
+						<mx:DataGridColumn width="100" headerText="BLDG TYPE" dataField="BUILDING_TYPE"/>
+						<mx:DataGridColumn width="73" headerText="COST-CTR" dataField="COST_CENTER"/>
+						<mx:DataGridColumn width="43" headerText="YEAR" dataField="YEAR_BUILT"/>
+						<mx:DataGridColumn width="65" headerText="PHONE" dataField="PHONE_NUMBER"/>
+						<mx:DataGridColumn width="60" headerText="FTAGE^2" dataField="SQUARE_FOOTAGE"/>
+						<mx:DataGridColumn width="43" headerText="UKEY" dataField="UKEY"/>
+						<mx:DataGridColumn width="75" headerText="INVENTORY" dataField="INVENTORY_NUMBER"/>
+					</mx:columns>
+				</mx:DataGrid>
+			</mx:Panel>			
+		</s:Group>
+		
+		<!--state4-->
+		<s:Group id="clearGraphic" visible="false" visible.clearGraphic="true" width="100%" height="100%">
+			<s:layout>
+				<s:VerticalLayout gap="5" horizontalAlign="center"/>
+			</s:layout>
+			<mx:Text id="myTxtLabel" text="{getDescriptLbl}" width="100%" textAlign="center"
+				fontWeight="normal"/>
+			<mx:HBox horizontalAlign="center" width="100%" >
+				<mx:Image click="{activateClick()}" source="assets/images/i_draw_point.png"
+					useHandCursor="true" buttonMode="true" toolTip="{mypointLabel}" width="40" height="40" />
+				<mx:Image click="clearMap()" source="assets/images/i_clear.png" useHandCursor="true"
+					buttonMode="true" toolTip="{getClearLbl}" width="40" height="40"/>
+			</mx:HBox>	
+		</s:Group>
+	</viewer:WidgetTemplate>	
+</viewer:BaseWidget>

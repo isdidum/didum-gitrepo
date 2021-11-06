@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   pageTitle="Didum-Test" backgroundAlpha="0.10" backgroundColor="0xF4F4F4">
+	
+	<fx:Declarations>
+		<esri:Extent id="myIniExtent" xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25" 
+					 spatialReference="{new SpatialReference(102113)}"/>
+		
+		<!-- Query Tasks -->
+		<esri:QueryTask id="queryTask" useAMF="false" showBusyCursor="true" 
+						url="http://geonexus/ArcGIS/rest/services/Facilities/BuildingIndex/MapServer/0"/>
+		<esri:Query id="query" outFields="*" outSpatialReference="{myMap.spatialReference}" 
+					returnGeometry="true" text="{queryTxt.text}"/> 
+	</fx:Declarations>
+	
+	<mx:VDividedBox width="100%" height="100%">
+		<s:BorderContainer width="100%" height="7%" backgroundColor="0xEEEEEE" borderVisible="false" 
+						   left="5" right="2" top="15">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center"/>
+			</s:layout>
+			<!--text="788K24"-->
+			<s:TextInput id="queryTxt" width="100" focusColor="0xa2d2ff" color="0x808080" fontSize="12" 
+						 fontWeight="bold" enter="queryTask.execute(query);"/>
+			<s:Button click="queryTask.execute(query);" enabled="true" label="Search" 
+					  color="0x000000"/>
+		</s:BorderContainer>
+		
+		<!--The map-->    
+		<esri:Map id="myMap" extent="{myIniExtent.expand(1.0)}" logoVisible="false" 
+				  openHandCursorVisible="false">
+			<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Facilities/BuildingIndex/MapServer"/>
+		</esri:Map>
+		
+		<mx:DataGrid id="resultsGrid" width="100%" height="25%" color="0x006699"
+					 dataProvider="{queryTask.executeLastResult.attributes}"
+					 visible="{queryTask.executeLastResult != null}">
+			<mx:columns>
+				<mx:DataGridColumn width="70" dataField="YEAR_BUILT" headerText="Year Built"/>
+				<mx:DataGridColumn dataField="UKEY" headerText="Unique Key"/>
+				
+				<mx:DataGridColumn dataField="INVENTORY_NUMBER" headerText="Inventory"/>
+				<mx:DataGridColumn dataField="SQUARE_FOOTAGE"  headerText="Sqr-Footage"/>
+				
+				<mx:DataGridColumn dataField="PHONE_NUMBER" headerText="Phone"/>
+				<mx:DataGridColumn dataField="BUILDING_TYPE" headerText="Building"/>
+				
+				<mx:DataGridColumn dataField="DESCRIPTION1" headerText="Description"/>
+				<mx:DataGridColumn dataField="ADDRESS1" headerText="City Name"/> 
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:VDividedBox>
+	
+</s:Application>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright © 2008 - 2009 ESRI
+//
+// All rights reserved under the copyright laws of the United States.
+// You may freely redistribute and use this software, with or
+// without modification, provided you include the original copyright
+// and use restrictions.  See use restrictions in the file:
+// <install location>/FlexViewer/License.txt
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:viewer="com.esri.viewer.*"		
+	xmlns:widgets="widgets.DotContainer.ImageryIdnt.*"
+	layout="absolute" xmlns:Search="widgets.Search.*">
+	<!--creationComplete="initiate()"-->
+	
+	<!--widgetConfigLoaded="init()"  not needed since .xml file not included-->
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			import com.esri.ags.tools.DrawTool;
+			import com.esri.ags.events.DrawEvent;
+			
+			import flash.net.navigateToURL;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.ResultEvent;
+				
+			private var lastClick:MapPoint;		
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			
+			//myLabels
+			[Bindable]private var identifylabel;
+			[Bindable]private var descriptlabel;
+			[Bindable]private var resultslabel;
+			[Bindable]private var mypointlabel;
+			[Bindable]private var myclearlabel;
+			
+			
+			private function activateGraphic():void {
+				map.addLayer(myGraphicsLayer);
+			}
+					
+			private function mapIdentify(event:MapMouseEvent):void
+			{
+				activateGraphic();
+				myGraphicsLayer.clear();
+				
+				var identifyParams:IdentifyParameters = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = event.mapPoint;
+				identifyParams.mapExtent = map.extent;
+				identifyParams.width = map.width;
+				identifyParams.height = map.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = map.spatialReference;
+				
+				lastClick = event.mapPoint;
+				var clickGraphic:Graphic = new Graphic(lastClick, clickPtSym);
+				myGraphicsLayer.add(clickGraphic);
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFnctn, myFaultFnctn, clickGraphic));
+			}
+			
+			private function myResultFnctn(results:Array, clickGraphic:Graphic = null):void {
+				if(results && results.length > 0) {
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;
+					
+					var myMapPoint:MapPoint = MapPoint(clickGraphic.geometry);
+					var myPoint:Point = map.toScreen(myMapPoint);
+					var myLabel:String, infoWinText:String;
+					
+					switch(resultGraphic.geometry.type) 
+					{
+						case Geometry.POLYGON: 
+						{
+							//This allows the population of datagrid
+							var myFeatures:ArrayCollection = new ArrayCollection();
+							for(var k:int = 0; k < results.length; k++) 
+							{
+								var cntr2: Number = (k+1);
+								bPanel.title = "Available Imagery (Count : " + results.length + ")";
+								
+								myFeatures.addItem(
+									{
+										COUNT: cntr2,
+										Service: results[k].feature.attributes.Service,
+										ImageryPat: results[k].feature.attributes.ImageryPat,
+										ServiceNam: results[k].feature.attributes.ServiceNam,
+										ViewImage: " "
+									}
+								);
+								wTemplate.width = 500; wTemplate.height = 250;
+								//bPanel.percentWidth = 100; bPanel.percentHeight = 100;
+								myGrid.visible = true;
+								myGrid.dataProvider = myFeatures;
+							}
+						}
+						lastIdentifyResultGraphic = resultGraphic;
+						myGraphicsLayer.graphicProvider = lastIdentifyResultGraphic;
+					}
+					//myGraphicsLayer.graphicProvider = lastIdentifyResultGraphic;
+				}
+			}
+			
+			private function myFaultFnctn(errInfo:Object, clickGraphic:Graphic = null):void {
+				Alert.show(String(errInfo), "Identify Error"); 
+			}
+			
+			private function myGridItemClick(event:ListEvent):void {
+				switch(event.columnIndex) {
+					case 1: {
+						var myStr:String = myGrid.selectedItem.Service;
+						navigateToURL(new URLRequest(myStr), '_blank');
+						break;
+					}
+					case 2: {
+						var myStr2:String = myGrid.selectedItem.ImageryPat;
+						navigateToURL(new URLRequest(myStr2), '_blank');
+						break;
+					}
+					case 4: {
+						myImageTile.url = event.itemRenderer.data.Service;
+						myGraphicsLayer.clear();
+						
+						myGrid.addEventListener(MouseEvent.CLICK, myLyrAdd);
+						myGrid.addEventListener(MouseEvent.MOUSE_WHEEL, myLyrDelete); 
+						
+						function myLyrAdd():void {
+							map.alpha = 0.50;
+							map.addLayer(myImageTile, 0); //-1=place img on top
+							map.reorderLayer(myImageTile.url, 0); //1=place img on top, 0=place img underneath
+						}
+						
+						function myLyrDelete():void {
+							map.removeLayer(myImageTile);
+						}
+						break;
+					}
+					default : {
+						myGraphicsLayer.clear();
+						break;
+					}
+				}
+			}
+			
+			private function initiate():void {
+				map.openHandCursorVisible = false;
+				map.extent = new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113));
+				map.addEventListener(MapMouseEvent.MAP_CLICK, mapIdentify);
+			}
+			
+			private function clearMap():void {
+				map.alpha = 1.0;
+				myImageTile.visible = false;
+				map.removeLayer(myImageTile);
+				map.openHandCursorVisible = true;
+				map.removeEventListener(MapMouseEvent.MAP_CLICK, mapIdentify);
+				if(myGraphicsLayer){ //check to see if graphicslayer is active
+					myGraphicsLayer.visible = false;
+				}
+			}
+
+			protected function wOpenHandler(event:Event):void
+			{
+				initiate(); //activates the widget tray
+			}
+
+			protected function wClosedHandler(event:Event):void
+			{
+				clearMap(); //resets map to normal state and deactivates widget tray
+			}
+
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="clickPtSym" color="0x00FF00" size="12" style="circle"/>
+		
+		<!-- Identify Task -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" disableClientCaching="true" 
+			url="http://geonexus/ArcGIS/rest/services/AerialImagery/GeoNexusAerialImageryDB/MapServer"/>
+	
+		<!--GraphicsLayers and ImageService-->
+		<esri:ArcGISImageServiceLayer id="myImageTile" alpha="1.0" visible="true"/>
+		<esri:GraphicsLayer id="myGraphicsLayer"/>
+	</fx:Declarations>	
+	
+
+	<viewer:WidgetTemplate id="wTemplate" width="340" height="200" open="wOpenHandler(event)"
+		closed="wClosedHandler(event)" >
+		<mx:Panel id="bPanel" color="0x999999" width="100%" height="100%"
+			title="Available Imagery (Count : 0)" visible="true">
+			<mx:DataGrid id="myGrid" visible="false" color="0x006699" width="460" height="100%"
+				itemClick="myGridItemClick(event)" editable="false" horizontalScrollPolicy="auto">			
+				<mx:columns>
+					<mx:DataGridColumn width="15" dataField="COUNT" headerText="#"/>
+					<mx:DataGridColumn width="130" dataField="Service" headerText="Click Service to View"/>
+					
+					<mx:DataGridColumn width="130" dataField="ImageryPat" headerText="Click Service Path to View"/>
+					<mx:DataGridColumn width="70" dataField="ServiceNam" headerText="Service Name"/>
+					<mx:DataGridColumn width="15" dataField="ViewImage" headerText="Click Image">
+						<mx:itemRenderer>
+							<fx:Component>
+								<!--Radio Buttons-->
+								<mx:RadioButton fontWeight="bold" 
+									label="On/Off" labelPlacement="right" paddingLeft="5"
+									selected="{(data.ViewImage === 'false')?true:false}"
+									click="{data.ViewImage = (data.ViewImage !== 'false')?'true':'false';}" />
+							</fx:Component>
+						</mx:itemRenderer>
+					</mx:DataGridColumn>
+				</mx:columns>
+			</mx:DataGrid>
+			<!--for RadioButton http://blog.flexexamples.com/2008/01/27/using-a-checkbox-control-as-a-list-item-renderer-in-flex/-->
+		</mx:Panel>
+	</viewer:WidgetTemplate>	
+</viewer:BaseWidget>

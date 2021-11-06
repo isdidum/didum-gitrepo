@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags" 
+	minWidth="955" minHeight="600"
+	pageTitle="Find Your Christian County Polling Place"
+	creationComplete="init()" 
+	xmlns:symbols="com.esri.ags.symbols.*" 
+	xmlns:layers="com.esri.ags.layers.*">
+	<s:layout>
+		<s:VerticalLayout gap="4"/>
+	</s:layout>
+	
+	<fx:Declarations>
+		<esri:Locator id="locateTask" 
+			url="http://gis-server.greatriv.com/ArcGIS/rest/services/ChristianCo/compositeBNOStreets/GeocodeServer"/>
+		<symbols:PictureMarkerSymbol id="pollSym" source="@Embed(source='assets/bluestar16.png')" width="20" height="20"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.components.InfoWindow;
+			import com.esri.ags.events.MapEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Multipoint;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			import com.esri.ags.tasks.Locator;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.AddressCandidate;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.serialization.json.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Text;
+			import mx.controls.TextArea;
+			import mx.core.UIComponent;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.ObjectUtil;
+			
+			private var queryTask:QueryTask;
+			private var query:Query;
+			[Bindable]
+			private var queryTask2:QueryTask;
+			private var query2:Query;
+			private var tpoints:Array;
+			private var sPrecinct:Array;
+			private var sPolling:Array;
+			private var uic:UIComponent;
+			
+			private function init():void
+			{
+				//precinct polygon
+				var myURL1:String = "http://gis-server.greatriv.com/ArcGIS/rest/services/ChristianCo/VoterPrecincts/MapServer/0";
+				queryTask = new QueryTask(myURL1);
+				query = new Query();
+				query.returnGeometry = false;
+				query.outFields = ["PollingPlace"];
+				query.spatialRelationship = "esriSpatialRelIntersects";
+				
+				//polling points layer, not spatial
+				var myURL2:String = "http://gis-server.greatriv.com/ArcGIS/rest/services/ChristianCo/PollingLocations/MapServer/0";
+				queryTask2 = new QueryTask(myURL2);
+				query2 = new Query();
+				query2.returnGeometry = true;
+				query2.outFields = ["*"];
+				map.logoVisible = false;
+				
+				uic = new UIComponent();
+				uic.includeInLayout = false;
+				uic.visible = false;
+				addElement(uic);
+			}
+			
+			private function locate():void
+			{
+				tpoints = [];
+				sPrecinct = [];
+				sPolling = [];
+				graphicsLayer.clear();
+				//had to change Street to Address
+				var address:Object = {
+					Address : inAddress.text,
+						City : inCity.text
+				};
+				
+				locateTask.addressToLocations(address, ["*"], new AsyncResponder(onResult, onFault));
+				
+				function onResult(candidates:Array, token:Object = null):void
+				{
+					var addressCandidate:AddressCandidate;
+					for (var i:int=0; i < candidates.length; i++) {
+						addressCandidate = candidates[i];
+						if (addressCandidate.score > 70) {
+							var pGeom:Geometry = addressCandidate.location;
+							pGeom.spatialReference = map.spatialReference;
+							var pArray:Array = [addressCandidate.location,addressCandidate.address,addressCandidate.score];
+							tpoints.push(pArray);
+						}
+					}
+					if (tpoints.length > 0) {
+						qPrecinct();
+					} else {
+						var symbol:PictureMarkerSymbol = new PictureMarkerSymbol("assets/images/home_18.png", 18, 18, 0, 0, 0);
+						var attributes:Object = { id: 0, content: "Address Not Found"};
+						var gra:Graphic = new Graphic(map.extent.center,symbol,attributes);
+						gra.addEventListener(MouseEvent.CLICK,selRow);
+						graphicsLayer.add(gra);
+						var obj:Object = {
+							id: 0,
+							address: "Address Not Found",
+							score: "",
+							precinct: ""
+						}
+						resultsGrid.dataProvider = obj;
+					}
+				}
+				function onFault(info:Object, token:Object = null):void
+				{
+					trace(info.toString())
+				}
+			}
+			
+			private function qPrecinct():void 
+			{
+				for (var i:int=0; i<tpoints.length; i++) {
+					query.geometry = tpoints[i][0]; //use location of address point for query
+					queryTask.execute(query, new AsyncResponder(onQResult, onQFault, tpoints[i])); //query is spatial intersect address pt and precinct poly
+					
+					function onQResult(featureSet:FeatureSet, token:Object = null):void
+					{
+						if (featureSet.features.length > 0) {
+							sPrecinct.push(featureSet.features[0].attributes["PollingPlace"]);
+							query2.outSpatialReference = map.spatialReference;
+							query2.where = "POLLINGPLA = '" + featureSet.features[0].attributes["PollingPlace"] + "'";
+							queryTask2.execute(query2, new AsyncResponder(onQ2Result, onQ2Fault, token));
+							
+							function onQ2Result(featureSet:FeatureSet, token:Object = null):void
+							{
+								if (featureSet.features.length > 0) {
+									for (var i:int=0; i<featureSet.features.length; i++) {
+										var iPolling:Object = {
+											place: featureSet.features[i].attributes["POLLINGPLA"],
+												address: featureSet.features[i].attributes["ADDRESS"],
+												township: featureSet.features[i].attributes["TOWNSHIP"],
+												precinct1: featureSet.features[i].attributes["PrecinctNum1"],
+												precinct2: featureSet.features[i].attributes["PrecinctNum2"]?featureSet.features[i].attributes["PrecinctNum2"]:"",
+												graphic: featureSet.features[i],
+												oaddress: token[1],
+												score: token[2]
+										}
+									}
+									sPolling.push(iPolling);
+									graphicsLayer.graphicProvider = featureSet.features;
+								} else {
+									sPolling.push("No polling place found");
+								}
+								showResults();
+							}
+							
+							function onQ2Fault(info:Object, token:Object = null):void {
+								trace(info.toString());
+							}
+						} else {
+							sPrecinct.push("Not in a county precinct");
+							showResults();
+						}
+					}
+					
+					function onQFault(info:Object, token:Object = null):void {
+						trace(info.toString());
+					}
+				}
+			}
+			
+			private function showResults():void {
+				var dataForGrid:Array = [];
+				var symbol:PictureMarkerSymbol = new PictureMarkerSymbol("assets/images/home_18.png", 18, 18, 0, 0, 0);
+				var mpoints:Multipoint = new Multipoint(null,map.spatialReference);
+				
+				for (var i:int=0; i<tpoints.length; i++) {
+					var attributes:Object;
+					var mp:MapPoint = tpoints[i][0];
+					var pollMP:MapPoint;
+					var fPolling:String = "";
+					if (sPolling.length > 0) {
+						var iPolling:Object = sPolling[0];
+						pollMP = iPolling.graphic.geometry as MapPoint;
+						fPolling += "<br /> Name: " + iPolling.place + "<br /> Address: " + iPolling.address + "<br /> Township: " + iPolling.township + "<br /> Precinct Num 1: "  + iPolling.precinct1 + "<br /> Precinct Num 2: " + iPolling.precinct2;
+						var content:String = "<b>Polling Place: </b>" + fPolling;
+						attributes = { 
+							id:i, 
+							content:content, 
+							poll: pollMP 
+						};
+					} else {
+						var content2:String = "<b>Address: </b>" + tpoints[i][1] + "<br />";
+						content2 += "<b>Score: </b>" + tpoints[i][2] + "<br />";
+						content2 += "<b>Precinct Name: </b>" + sPrecinct[i] + "<br />";
+						attributes = { id:i, content:content2, poll: mp };
+					}
+					var gra:Graphic = new Graphic(mp, symbol, attributes);
+					gra.addEventListener(MouseEvent.CLICK,selRow);
+					graphicsLayer.add(gra);
+					var obj:Object = {
+						id: i,
+						address: tpoints[i][1],
+						score: tpoints[i][2],
+						polling: sPrecinct[i],
+						pollLoc: attributes.poll
+					}
+					dataForGrid.push(obj);
+					mpoints.addPoint(mp);
+				}
+				resultsGrid.dataProvider = dataForGrid;
+				
+				if (mpoints.extent) {
+					map.extent = mpoints.extent.expand(3);
+				} else {
+					var xmin:Number = mpoints.points[0].x - 5000;
+					var ymin:Number = mpoints.points[0].y - 5000;
+					var xmax:Number = mpoints.points[0].x + 5000;
+					var ymax:Number = mpoints.points[0].y + 5000;
+					var ext:Extent = new Extent(xmin, ymin, xmax, ymax, map.spatialReference);
+					map.extent = ext;
+				}
+			}
+			
+			private function selRow( event:MouseEvent ) : void
+			{
+				var gra:Graphic = event.currentTarget as Graphic;
+				map.infoWindow.label = "Location";
+				var ta:TextArea = new TextArea();
+				ta.setStyle("focusAlpha", 0);
+				ta.htmlText = gra.attributes.content;
+				ta.minWidth = 250;
+				ta.minHeight = 120;
+				ta.validateNow();
+				map.infoWindow.content = ta;
+				map.infoWindow.height = ta.textHeight + 20;
+				map.infoWindow.width = ta.textWidth + 20;
+				if(gra.attributes.poll){
+					map.infoWindow.show(gra.attributes.poll);
+					map.centerAt(gra.attributes.poll);
+				}
+				
+				for each( var attributes:Object in resultsGrid.dataProvider )
+				{
+					if (attributes.id === gra.attributes.id)
+					{
+						resultsGrid.selectedIndex = (resultsGrid.dataProvider as ArrayCollection).getItemIndex(attributes)						
+					}
+				}
+				resultsGrid.scrollToIndex(resultsGrid.selectedIndex);
+			}
+			
+			private function onItemClick( event:ListEvent ) : void
+			{
+				var gra:Graphic = findGraphicByAttribute(event.itemRenderer.data.id);
+				map.infoWindow.label = "Location";
+				var ta:TextArea = new TextArea();
+				ta.setStyle("focusAlpha", 0);
+				ta.htmlText = gra.attributes.content;
+				ta.minWidth = 250;
+				ta.minHeight = 120;
+				ta.validateNow();
+				map.infoWindow.content = ta;
+				map.infoWindow.height = ta.textHeight + 20;
+				map.infoWindow.width = ta.textWidth + 20;
+				if(gra.attributes.poll){
+					map.infoWindow.show(gra.attributes.poll);
+					map.centerAt(gra.attributes.poll);
+				}
+			}
+			
+			private function onItemRollOut( event:ListEvent ) : void
+			{
+				map.infoWindow.hide();
+			}
+			
+			public function findGraphicByAttribute( id:Number ) : Graphic
+			{
+				for each( var graphic:Graphic in graphicsLayer.graphicProvider)
+				{
+					if ( graphic.attributes.id === id)
+					{
+						return graphic;
+					}
+				}			
+				return null;
+			}
+		]]>
+	</fx:Script>
+	<mx:VDividedBox height="100%" width="100%">
+		<s:VGroup height="100%" width="100%">
+			<mx:Image source="assets/globe-16x16.png"/>
+			<s:Label text="    Step 1:  Enter the address that you are intrested in below. Then Click Locate."/>
+			<s:HGroup verticalAlign="middle">
+				<s:Label text="    Address:"/>
+				<s:TextInput id="inAddress" text="306 Washington" />
+				<s:Label text="City:"/>
+				<s:TextInput id="inCity" text="Billings" />
+				<s:Button label="Locate..." click="locate()"/>
+			</s:HGroup>
+			<s:Label text="    Step 2: Click on a row in the grid to get details on the location. The Geocode Score is a percent of how closely your address matches the address listed." />
+			<esri:Map id="map" zoomSliderVisible="false" height="100%">
+				<esri:ArcGISDynamicMapServiceLayer 
+					url="http://gis-server.greatriv.com/ArcGIS/rest/services/ChristianCo/ChristianCo_Clerk/MapServer"/>
+				<layers:GraphicsLayer id="graphicsLayer" graphicProvider="{queryTask2.executeLastResult.features}" symbol="{pollSym}"/>			  
+			</esri:Map>
+		</s:VGroup>
+		<mx:DataGrid id="resultsGrid" itemClick="onItemClick(event)" width="100%" height="87">
+			<mx:columns>
+				<mx:DataGridColumn headerText="Id" dataField="id" visible="false"/>
+				<mx:DataGridColumn headerText="Address" dataField="address"/>
+				<mx:DataGridColumn headerText="Geocode Score" dataField="score"/>
+				<mx:DataGridColumn headerText="Polling Place" dataField="polling"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:VDividedBox>
+</s:Application>

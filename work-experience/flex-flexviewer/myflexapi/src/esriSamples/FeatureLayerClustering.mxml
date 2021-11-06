@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:text="flash.text.*"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Clustering with Flex API">
+    <!--
+         Clustering is useful to visualize lots of point data.
+
+         The individual point data is grouped into clusters,
+         and then the cluster is rendered as one graphic.
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.ExtentEvent;
+            import com.esri.ags.events.FlareEvent;
+            import com.esri.ags.events.FlareMouseEvent;
+            import com.esri.ags.events.GraphicEvent;
+            import com.esri.ags.events.MapEvent;
+
+            protected function map_loadHandler(event:MapEvent):void
+            {
+                map.addEventListener(FlareMouseEvent.FLARE_CLICK, flareClickHandler);
+                // map.addEventListener(FlareMouseEvent.FLARE_OVER, flareOverHandler);
+                // map.addEventListener(FlareMouseEvent.FLARE_OUT, flareOutHandler);
+                map.addEventListener(FlareEvent.FLARE_IN_START, flareInStartHandler);
+            }
+
+            private function flareInStartHandler(event:FlareEvent):void
+            {
+                map.infoWindow.hide();
+            }
+
+            private function flareClickHandler(event:FlareMouseEvent):void
+            {
+                showInfowindow(event.graphic, event.stageX, event.stageY);
+            }
+
+            private function flareOverHandler(event:FlareMouseEvent):void
+            {
+                showInfowindow(event.graphic, event.stageX, event.stageY);
+            }
+
+            private function flareOutHandler(event:FlareMouseEvent):void
+            {
+                map.infoWindow.hide();
+            }
+
+            protected function featureLayer_graphicAddHandler(event:GraphicEvent):void
+            {
+                // event.graphic.addEventListener(MouseEvent.MOUSE_OVER, onMouseOverHandler);
+                // event.graphic.addEventListener(MouseEvent.MOUSE_OUT, onMouseOutHandler);
+            }
+
+            /*
+               private function onMouseOverHandler(event:MouseEvent):void
+               {
+               showInfowindow(Graphic(event.target), event.stageX, event.stageY);
+               }
+
+               private function onMouseOutHandler(event:MouseEvent):void
+               {
+               map.infoWindow.hide();
+               }
+             */
+
+            private function showInfowindow(gr:Graphic, stagex:Number, stagey:Number):void
+            {
+                myTextArea.htmlText = "<b>State Name: </b>" + gr.attributes.STATE_NAME + "\n"
+                    + "<b>Age (5-17): </b>" + gr.attributes.AGE_5_17 + "\n"
+                    + "<b>Age (18-64) </b>" + gr.attributes.AGE_18_64 + "\n"
+                    + "<b>Age (65 and above): </b>" + gr.attributes.AGE_65_UP;
+                map.infoWindow.label = gr.attributes.CITY_NAME;
+                map.infoWindow.closeButtonVisible = false;
+                map.infoWindow.show(map.toMapFromStage(stagex, stagey));
+            }
+
+            protected function map_extentChangeHandler(event:ExtentEvent):void
+            {
+                map.infoWindow.hide();
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <text:TextFormat id="tf"
+                         font="Arial"
+                         size="14"/>
+        <esri:FlareSymbol id="flareSymbol"
+                          flareSizeIncOnRollOver="3"
+                          textFormat="{tf}"/>
+        <esri:WeightedClusterer id="clusterer" symbol="{flareSymbol}"/>
+        <esri:SimpleMarkerSymbol id="defaultsym"
+                                 alpha="0.8"
+                                 color="0xFF0000">
+            <esri:SimpleLineSymbol width="2" color="0xFFFFFF"/>
+        </esri:SimpleMarkerSymbol>
+    </fx:Declarations>
+
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+
+    <esri:Map id="map"
+              extentChange="map_extentChangeHandler(event)"
+              load="map_loadHandler(event)"
+              openHandCursorVisible="false">
+        <esri:extent>
+            <esri:Extent xmin="-14477000" ymin="2273000" xmax="-6677000" ymax="8399000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:infoWindowContent>
+            <mx:TextArea id="myTextArea"
+                         width="200" height="80"
+                         editable="false"/>
+        </esri:infoWindowContent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer"/>
+        <esri:FeatureLayer id="featureLayer"
+                           clusterer="{clusterer}"
+                           definitionExpression="POP1990 > 75000"
+                           graphicAdd="featureLayer_graphicAddHandler(event)"
+                           mode="snapshot"
+                           outFields="*"
+                           symbol="{defaultsym}"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/0"/>
+    </esri:Map>
+    <s:Label text="{featureLayer.numGraphics} graphics"/>
+    <s:Label text="{clusterer.extentExpandFactor} - {clusterer.minGraphicCount} min - {clusterer.overallMaxCount}/{clusterer.overallMinCount} overall - {clusterer.sizeInPixels} graphics"/>
+</s:Application>

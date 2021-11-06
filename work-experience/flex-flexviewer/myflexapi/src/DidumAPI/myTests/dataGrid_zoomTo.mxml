@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+		xmlns:esri="http://www.esri.com/2008/ags"
+		pageTitle="Query, then zoom to results">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Polygon;
+			
+			import mx.controls.Alert;
+			import mx.rpc.AsyncResponder;
+			
+			[Bindable] private var lastIdentifyResultGraphic:Graphic;
+			
+			private function doQuery():void
+			{
+				query.text = fText.text;
+				query.where = "*";
+				queryTask.execute(query, new AsyncResponder(onResult, onFault));
+				function onResult(featureSet:FeatureSet, token:Object = null):void
+				{
+					// clear the graphics layer
+					myGraphicsLayer.clear();
+					
+					if (featureSet.features.length == 0)
+					{
+						Alert.show("No States found. Please try again.");
+					}
+					else
+					{
+						var unionExtent:Extent;
+						var myFirstGraphic:Graphic = featureSet.features[0];
+						unionExtent = Polygon(myFirstGraphic.geometry).extent;
+						
+						for each (var myGraphic1:Graphic in featureSet.features)
+						{
+							myGraphicsLayer.add(myGraphic1);
+							unionExtent = unionExtent.union(Polygon(myGraphic1.geometry).extent);
+						}
+						
+						MainMap.extent = unionExtent;
+					}
+				}
+				function onFault(info:Object, token:Object = null):void
+				{
+					Alert.show("-->Error Here<--" + info.toString());
+				}
+			}
+			
+			private function sfDataGrid_Click():void
+			{
+				var obj:Object = sfDataGrid.selectedItem;
+				if (obj != null)
+				{
+					lastIdentifyResultGraphic = null;
+					
+					query.where = "CO_NAME = '" + obj["CO_NAME"] + "'";
+					queryTaskZoom.execute(query, new AsyncResponder(onResult, onFault));
+					
+					function onResult(featureSet:FeatureSet, token:Object = null):void
+					{
+						lastIdentifyResultGraphic = featureSet.features[0];
+						lastIdentifyResultGraphic.symbol = sfs;
+						MainMap.extent = new Extent(lastIdentifyResultGraphic.geometry.extent.xmin,
+							lastIdentifyResultGraphic.geometry.extent.ymin,
+							lastIdentifyResultGraphic.geometry.extent.xmax,lastIdentifyResultGraphic.geometry.extent.ymax);
+					}
+					function onFault(info:Object, token:Object = null):void
+					{
+						Alert.show("Query Problem ", info.toString());
+					}
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+	<!-- Symbol for Query Result as Polygon -->
+	<esri:SimpleFillSymbol id="sfs" alpha="0.7" color="0xFF0000"/>
+	
+	<!-- Layer with US States -->
+	<esri:QueryTask id="queryTask" showBusyCursor="true"
+		url="http://geonexus/ArcGIS/rest/services/Boundaries/COUNTY_BORDERS_SO/MapServer/0"/>
+	<esri:QueryTask id="queryTaskZoom" showBusyCursor="true"
+		url="http://geonexus/ArcGIS/rest/services/Boundaries/COUNTY_BORDERS_SO/MapServer/0"/>
+	
+	<esri:Query id="query" text="{fText.text}" returnGeometry="true"
+		outSpatialReference="{MainMap.spatialReference}">
+		<esri:outFields>
+			<fx:String>CO_NUMBER</fx:String>
+			<fx:String>COUNTY_YEAR</fx:String>
+		</esri:outFields>
+	</esri:Query>
+	</fx:Declarations>
+			
+	<mx:VDividedBox height="100%" width="100%">
+		
+		<mx:HBox width="100%" height="40" backgroundColor="0xDDDDFF" paddingTop="10" horizontalAlign="center">
+			<mx:Text text="Search for U.S. States:"/>
+			<mx:TextInput id="fText" enter="doQuery();" text="Lyon"/>
+			<mx:Button label="Query" click="doQuery();" enabled="true"/>
+		</mx:HBox>
+		<mx:Text id="resultSummary" height="15"/>
+		
+		<!--The map-->
+		<esri:Map id="MainMap" openHandCursorVisible="false" level="7" logoVisible="false"
+			extent="{new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113))}">
+			<esri:ArcGISTiledMapServiceLayer
+				url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+			<esri:GraphicsLayer id="myGraphicsLayer" symbol="{sfs}" graphicProvider="{lastIdentifyResultGraphic}"/>
+		</esri:Map>
+		
+		<mx:DataGrid id="sfDataGrid" click="sfDataGrid_Click()"
+			dataProvider="{queryTask.executeLastResult.attributes}"
+			scroll="true" width="100%" height="40%"/>
+	</mx:VDividedBox>
+	
+</s:Application>

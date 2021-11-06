@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="InfoWindow as MapTips">
+    <!--
+         @@includeFiles com/esri/ags/samples/InfoWindowRollOverContent.mxml
+    -->
+
+    <s:layout>
+        <s:VerticalLayout paddingBottom="20"
+                          paddingLeft="20"
+                          paddingRight="20"
+                          paddingTop="20"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GraphicEvent;
+            import com.esri.ags.geometry.MapPoint;
+
+            private function graphicAddHandler(event:GraphicEvent):void
+            {
+                var graphic:Graphic = event.graphic;
+                graphic.addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
+                graphic.addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
+            }
+
+            private function rollOverHandler(event:MouseEvent):void
+            {
+                const graphic:Graphic = event.target as Graphic;
+                if (graphic)
+                {
+                    const mapPoint:MapPoint = MapPoint(graphic.geometry);
+                    content.lat = mapPoint.y.toFixed(3);
+                    content.lon = mapPoint.x.toFixed(3);
+                    const point:Point = map.toScreen(mapPoint);
+                    point.y -= mySimpleMarkerSymbol.size / 2;
+                    map.infoWindow.show(map.toMap(point));
+                }
+            }
+
+            private function rollOutHandler(event:MouseEvent):void
+            {
+                map.infoWindow.hide();
+            }
+        ]]>
+    </fx:Script>
+
+    <s:initialize>
+        <![CDATA[
+            map.infoWindow.labelVisible = false;
+            map.infoWindow.closeButtonVisible = false;
+        ]]>
+    </s:initialize>
+
+    <s:Label width="100%"
+             fontSize="12"
+             fontWeight="bold"
+             text="Move your mouse over the red symbol to see an InfoWindow."/>
+    <esri:Map id="map" openHandCursorVisible="false">
+
+        <esri:extent>
+            <esri:Extent xmin="-14279700" ymin="2402000" xmax="-7011000" ymax="6716700">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:infoWindowContent>
+            <samples:InfoWindowRollOverContent id="content"/>
+        </esri:infoWindowContent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer"/>
+        <esri:FeatureLayer id="citiesFeatureLayer"
+                           definitionExpression="POP1990 &gt; 100000 AND STATE_NAME NOT IN ('Alaska','Hawaii')"
+                           graphicAdd="graphicAddHandler(event)"
+                           mode="snapshot"
+                           outFields="[CITY_NAME,POP1990]"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/0">
+            <esri:symbol>
+                <esri:SimpleMarkerSymbol id="mySimpleMarkerSymbol"
+                                         color="0xFF0000"
+                                         size="10"
+                                         style="diamond"/>
+            </esri:symbol>
+        </esri:FeatureLayer>
+    </esri:Map>
+</s:Application>

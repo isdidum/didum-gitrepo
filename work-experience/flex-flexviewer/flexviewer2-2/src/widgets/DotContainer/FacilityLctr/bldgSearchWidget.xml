@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2.1 - May 09, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <idntfylyroptn>top</idntfylyroptn>
+    <keepidentifyactive>true</keepidentifyactive>
+    <idntfytolerance>5</idntfytolerance>
+	<labels>
+	   <getlabel>Specify search here...</getlabel>
+	   <getdescriptlbl>Use the identify tool to identify features on the map 
+	   or click dumpster to clear map graphicslayer:</getdescriptlbl>
+	   <getsearch>Search</getsearch>
+	   <gettoggle>Layer</gettoggle>
+	   <getresult>Results</getresult>
+	   <getclearlbl>Clear</getclearlbl>
+	   <getidentclrlbl>Identify/Clear</getidentclrlbl>
+	   <mypointlabel>Map Point Identify</mypointlabel>
+	</labels>
+</configuration>

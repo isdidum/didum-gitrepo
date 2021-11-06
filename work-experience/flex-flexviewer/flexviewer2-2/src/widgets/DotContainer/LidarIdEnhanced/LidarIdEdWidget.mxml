@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Developed by Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2 June 03, 2011
+	////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:viewer="com.esri.viewer.*"
+	xmlns:LidarIdEnhanced="widgets.DotContainer.LidarIdEnhanced.*"
+	layout="absolute"
+	widgetConfigLoaded="init();"
+	currentState="StateIdentify">
+		
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace esri "http://www.esri.com/2008/ags";
+		@namespace components "com.esri.ags.components.*";
+		
+		components|InfoWindow {
+			content-background-alpha : 1.0; 
+			background-color : #00FFFF; /*was yellow*/
+			background-alpha : 0.8;
+			color : black;
+			border-style : solid;
+		}
+	</fx:Style>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.symbols.InfoSymbol;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			import com.esri.ags.tools.DrawTool;
+			
+			import flash.events.KeyboardEvent;
+			import flash.net.navigateToURL;
+			import flash.system.System;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			import mx.controls.advancedDataGridClasses.AdvancedDataGridColumn;
+			import mx.events.ItemClickEvent;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			
+			private var myDrawTool:DrawTool;
+			private var myGeometry:Geometry;
+			private var identifyParams:IdentifyParameters;
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			[Bindable]private var myFeatures:ArrayCollection;
+			[Bindable]private var dgToolTip:String;
+			[Bindable]private var getTitle:String = "Features : 0";
+			//getTxt was "Ctrl/Shift for multiple selection" iff(allowMultipleSelection=true) for myListCols
+			[Bindable]private var getTxt:String = "";
+			[Bindable]private var myListColsLabels:Array = [{label:"Count"}, {label:"Name"}, {label:"Click"}];
+			
+			
+			//labels
+			private var identifyLayerOption:String;
+			private var identifyTolerance:Number = 3;
+			private var selectDrawToolLabel:String;
+			private var resultsLabel:String;
+			[Bindable]private var descriptionLabel:String;
+			[Bindable]private var descriptLabel:String;
+			
+			[Bindable]private var pointLabel:String;
+			[Bindable]private var polylineLabel:String;
+			[Bindable]private var polygonLabel:String;
+			[Bindable]private var extentLabel:String;
+			
+		 	[Bindable]private var clearLabel:String;	
+			private var loadingLabel:String;	
+			[Bindable]private var msgVisible:Boolean = false;
+			private const myIconURL:String = "assets/images/";
+
+			
+
+			private function activateGraphic():void {
+				map.addLayer(myGraphicsLayer);
+			}			
+			
+			private function init():void
+			{				
+				activateGraphic();
+				myDrawTool = new DrawTool();
+				myDrawTool.map = map;
+				myTbb.addEventListener(ItemClickEvent.ITEM_CLICK, activateClick);
+				myDrawTool.addEventListener(DrawEvent.DRAW_END, onDrawEnd);
+				
+				if (configXML) {
+					selectDrawToolLabel = configXML.labels.slectdrawtoollabel || "Geometry DrawTool";
+					resultsLabel = configXML.labels.resultslabel || "Results";
+					descriptionLabel = configXML.labels.descriptionlabel || "Use the geometry draw tool to identify features on the map:";
+					descriptLabel = configXML.labels.descriptlabel || "Click dumpster to clear map graphicslayer:"
+					pointLabel = configXML.labels.pointlabel || "Map Point Identify";
+					polylineLabel = configXML.labels.polylinelabel || "Polyline";
+					polygonLabel = configXML.labels.polygonlabel || "Polygon";
+					extentLabel = configXML.labels.extentlabel || "Extent";
+					clearLabel = configXML.labels.clearlabel || "Clear";
+					loadingLabel = configXML.labels.loadinglabel || "Loading...";
+					identifyLayerOption = configXML.identifylayeroption || IdentifyParameters.LAYER_OPTION_VISIBLE;
+					if (Number(configXML.identifytolerance) > 0)
+						identifyTolerance = Number(configXML.identifytolerance);				
+				}
+				
+				LdrwTemplate.addTitlebarButton(myIconURL + "i_draw.png", selectDrawToolLabel, showStateIdentify);
+				LdrwTemplate.addTitlebarButton(myIconURL + "i_table.png", resultsLabel, showStateResults);
+				LdrwTemplate.addTitlebarButton(myIconURL + "i_clear.png", clearLabel, showClearGraphic);
+			}
+			
+			private function activateClick(event:ItemClickEvent):void {
+				if(!myDrawTool) myDrawTool = new DrawTool();
+				myDrawTool.graphicsLayer = myGraphicsLayer; //added
+				myDrawTool.fillSymbol = sfs;
+				myDrawTool.markerSymbol = sms;
+				myDrawTool.lineSymbol = sls;
+				myDrawTool.showDrawTips = false;
+				if(myTbb.selectedIndex < 0) {
+					myDrawTool.deactivate();
+				} else {
+					switch (event.item.label)
+					{
+						case "MAPPOINT": {
+							myTbb.toolTip = pointLabel;
+							myDrawTool.activate(DrawTool.MAPPOINT);
+							break;
+						}
+						case "POLYLINE": {
+							myTbb.toolTip = polylineLabel;
+							myDrawTool.activate(DrawTool.POLYLINE);
+							break;
+						}
+						case "POLYGON": {
+							myTbb.toolTip = polygonLabel;
+							myDrawTool.activate(DrawTool.POLYGON);
+							break;
+						}
+						case "EXTENT": {
+							myTbb.toolTip = extentLabel;
+							myDrawTool.activate(DrawTool.EXTENT);
+							break;
+						}
+						/*case "CLEAR": {
+							myTbb.toolTip = clearLabel;
+							myGraphicsLayer.clear();
+							//myTxtArea.visible = false;
+							myGrid.dataProvider = null;
+							bPanel.title = "Feature : 0";
+						}*/	
+					}
+				}
+			}
+			
+			
+			private function onDrawEnd(event:DrawEvent):void {
+				clearMap();
+				myGraphicsLayer.add(event.graphic);
+				myGeometry = event.graphic.geometry as Geometry;
+				myDrawTool.deactivate();	//1, all added
+				myTbb.selectedIndex = -1;	//2
+				myTbb.toolTip = null;		//3
+				doIdentify();
+			}								
+	
+				/**
+				 * If you only want one layer of one particular map service and that is it, than you need 
+				 * to look at the identifyFeatures function in the IdentifyWidget.mxml 
+				 * and basically delete all the for loop and just hard-code the 
+				 * identifyParams and identify task something like this:
+				 */
+				//* Code:
+			private function doIdentify():void {
+				//myGraphicsLayer.clear();  //delete
+				
+				identifyParams = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = myGeometry; //event.mapPoint;
+				identifyParams.mapExtent = map.extent;
+				identifyParams.width = map.width;
+				identifyParams.height = map.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = map.spatialReference;
+				//identifyParams.layerOption = "visible"; //IdentifyParameters.LAYER_OPTION_ALL;
+				startExecutionNow();
+				
+				showMessage(loadingLabel, true); 
+				showStateResults();
+			}
+			
+			private function startExecutionNow():void {	
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, null));
+			}
+			
+			private function myResultFunction(results:Array, token:Object=null):void {
+				if(results && results.length > 0) {
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;					
+					var myLabel:String, infoWinText:String;
+					var setGeom:Geometry = myGeometry;
+					
+					switch(resultGraphic.geometry.type) {
+						case Geometry.POLYGON: {
+
+							myFeatures = new ArrayCollection();
+							for(var k:int = 0; k < results.length; k++) {									
+								myFeatures.addItem({
+									COUNT: (k+1),
+									NAME: results[k].feature.attributes.PATH,	//was .NAME
+									myBTN: results[k].feature.attributes.PATH
+								});
+							}
+							myGrid.visible = true;
+							getTitle = "Features : " + results.length;
+							dgToolTip = "Select Shift/Ctrl + MouseClick to highlight cell data,";
+							dgToolTip += "\n\tCtrl + C  to copy data, and Ctrl + V to paste.";
+							break;
+						}
+					}
+					lastIdentifyResultGraphic = resultGraphic;							
+				}
+			}
+			
+			/*private function onFault(event:FaultEvent):void {                    
+				showMessage(event.fault.faultDetail, false);         
+			}*/
+			
+			private function myFaultFunction(error:Object, token:Object=null):void {
+				Alert.show(String(error), "Identify Error");
+				showMessage(String(error), false);
+			}
+			
+			protected function onItemClick(event:ListEvent):void {
+				var myListColsCntr:int = myListCols.selectedItems.length; //changes with change in event
+				var getName:Object = myListCols.selectedItem;
+				var getString:String = getName.label;
+				switch(event.columnIndex){ 
+					case 0: {
+						if(event.columnIndex === 0 && myListColsCntr === 1 && getString === "Click"){
+							showdgToolTip(false);
+							var myObj6:Object = event.itemRenderer.data.NAME;
+							navigateToURL(new URLRequest(myObj6.toString()), '_blank');
+						} else if(event.columnIndex === 0 && myListColsCntr === 2 && getString === "Name"){
+							showdgToolTip(true);
+						} else if(event.columnIndex === 0 && myListColsCntr === 1 && getString === "Name"){
+							showdgToolTip(true);
+						} else if(event.columnIndex === 0 && myListColsCntr === 1 && getString === "Count"){
+							showdgToolTip(false);
+						}	
+						break;
+					}
+					case 1: {
+						if(event.columnIndex === 1 && myListColsCntr === 2 && getString === "Name"){ 
+							//default setting of myListCols
+							showdgToolTip(false);
+							var myObj3:Object = event.itemRenderer.data.NAME;
+							navigateToURL(new URLRequest(myObj3.toString()), '_blank');
+						}else if(event.columnIndex === 1 && myListColsCntr === 3&& getString === "Count"){
+							showdgToolTip(true);
+						} 
+						break;
+					}
+					case 2: {
+						//show all setting of myListCols
+						if(event.columnIndex === 2 && myListColsCntr === 3 && getString === "Count"){
+							//if WAY-II, use myGrid.selectedItem.PATH  //var myStr:String = myGrid.selectedItem.NAME; //was.PATH
+							showdgToolTip(false);
+							var myObj:Object = event.itemRenderer.data.NAME;
+							navigateToURL(new URLRequest(myObj.toString()), '_blank');
+						}
+						break;
+					}	
+				}
+			}
+			
+			private function showdgToolTip(myToolTip:Boolean = true):String {
+				var myString:String;
+				if(myToolTip){
+					myGrid.toolTip = dgToolTip;
+					myString = myGrid.toolTip;
+				} else {
+					myGrid.toolTip = "";
+					myString = myGrid.toolTip;
+				}
+				return myString;
+			}
+			
+			//http://livedocs.adobe.com/flex/3/html/help.html?content=advdatagrid_05.html
+			
+			protected function myKeyUpHandler(event:KeyboardEvent):void {
+				var keycode_c:uint = 67; //this is letter C 
+				if(event.ctrlKey && event.keyCode === keycode_c) {
+					//seperator used between strings
+					var separator:String = "\n"; //","; googled escape characters for flex
+					//the string sent to clipboard
+					var dataString:String = "";
+					
+					var getLength:int = event.currentTarget.selectedCells.length;
+					for (var i:int = 0; i < getLength; i++) {
+						
+						var cell:Object = event.currentTarget.selectedCells[i];
+						// Get the row for the selected cell.
+						var data:Object = event.currentTarget.dataProvider[cell.rowIndex];
+						
+						// Get the name of the field for the selected cell.
+						var dataField:String = event.currentTarget.columns[cell.columnIndex].dataField;
+						
+						// Get the cell data using the field name.
+						dataString = data[dataField] + separator + dataString;
+					}
+					// Remove trailing separator.
+					dataString = dataString.substr(0, dataString.length - separator.length);
+					
+					// Write dataString to the clipboard.
+					System.setClipboard(dataString);
+				} 
+			}
+			
+			private function hideShowMyGridCols():void {
+				var myAdvGridCol:Array = myGrid.columns;
+				var myMxListCols:Array =  myListCols.selectedItems; 
+				var myAdvDGClassCol:AdvancedDataGridColumn;
+				var myGridHeaderTxtLbl:String; 
+				var myListColsLbls:String;
+				var colsVisible:Boolean
+				for (var i:int=0; i<myAdvGridCol.length; i++)  {
+					colsVisible = false
+					myAdvDGClassCol = myAdvGridCol[i];
+					myGridHeaderTxtLbl = myAdvDGClassCol.headerText; 
+					for (var j : int = 0; j < myMxListCols.length; j++)  {
+						if(myMxListCols[j] == null) continue;
+						myListColsLbls = myMxListCols[j].label;
+						if (myListColsLbls === myGridHeaderTxtLbl)  {
+							colsVisible = true;
+							break;
+						}			  
+					}       
+					if (colsVisible) {
+						myAdvDGClassCol.visible = true;
+					} else  {
+						myAdvDGClassCol.visible = false;
+						//myGrid.removeEventListener(ListEvent.ITEM_CLICK, onItemClick);
+					}
+				}
+			}
+			
+			private function showAll():void{
+				myListCols.selectedIndices = [0,1,2];
+				hideShowMyGridCols();
+			}
+			
+			private function hideAll():void{
+				myListCols.selectedIndices = [];
+				hideShowMyGridCols();
+			}
+			
+			private function setDefault():void{
+				myListCols.selectedIndices = [1,2];
+				hideShowMyGridCols();
+			}
+			
+			public var cntr:int=0;
+			private function handleDivderRelease():void{
+				if(cntr == 0){
+					myControlBox.width = 0;
+				}else if(cntr == 1){
+					myControlBox.width = 120;
+				}
+				cntr = (cntr + 1) % 2;
+			}
+			
+			private function clearMap():void {
+				myTbb.toolTip = clearLabel;
+				myGraphicsLayer.clear();
+				myGrid.dataProvider = null;
+				bPanel.title = "Feature : 0";
+				clearMessage();
+				myDrawTool.deactivate(); 	// added 6-14-2011
+				myGeometry = null;
+			}			
+
+			private function showMessage(msg:String, swfVisible:Boolean):void {
+				txtMessage.text = msg;
+				swfMessage.visible = swfVisible;
+				msgVisible = true;
+			}			
+			
+			private function clearMessage():void {
+				msgVisible = false;
+			}
+				
+			private function showStateIdentify():void {
+				this.currentState = "StateIdentify";
+				LdrwTemplate.width = 340; LdrwTemplate.height = 200;
+			}				
+			
+			private function showStateResults():void {
+				clearMessage();		//removes loading spinner
+				LdrwTemplate.width = 400; LdrwTemplate.height = 320;
+				this.currentState = "resultsList";
+				LdrwTemplate.selectedTitlebarButtonIndex = 1; // used to indicate selected titlebar button when automatically switching state
+			}
+			
+			private function showClearGraphic():void {
+				LdrwTemplate.width = 340; LdrwTemplate.height = 200;
+				this.currentState = "clearGraphic";
+			}
+			
+			private function widgetOpenedHandler(event:Event):void {
+				map.logoVisible = false;
+				showStateIdentify();
+				myTbb.addEventListener(ItemClickEvent.ITEM_CLICK, activateClick);
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = true;
+			}
+			
+			private function widgetMinimizedHandler(event:Event):void {
+				myGeometry = null; 
+				myDrawTool.deactivate();		//needed to keep widget at miminized state
+				resultsList.visible = false;
+				//myGraphicsLayer.clear();
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = true; //false;
+			}
+			
+			private function widgetClosedHandler(event:Event):void {
+				myGeometry = null;
+				myDrawTool.deactivate();
+				myGraphicsLayer.clear();
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = false;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" 
+			url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer" />
+
+		<esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="circle"/>
+		
+		<!-- Symbol for all line shapes -->
+		<esri:SimpleLineSymbol id="sls" width="3" color="0x00FF00"/>
+		
+		<!-- Symbol for all polygon shapes -->
+		<esri:SimpleFillSymbol id="sfs" color="0x5B5BFF" style="solid">
+			<esri:outline>
+				<esri:SimpleLineSymbol width="1" color="0x00FF00"/>
+			</esri:outline>
+		</esri:SimpleFillSymbol>
+		
+		<esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/> 
+		<esri:GraphicsLayer id="myGraphicsLayer"/>
+	</fx:Declarations>
+	
+	<viewer:states>
+		<s:State name="StateIdentify"/>
+		<s:State name="resultsList"/>
+		<s:State name="clearGraphic"/>
+	</viewer:states>
+	<viewer:transitions>
+		<s:Transition autoReverse="true" toState="*">
+			<s:Fade targets="{[StateIdentify,resultsList,clearGraphic]}"/>
+		</s:Transition>
+	</viewer:transitions>
+	
+	<viewer:WidgetTemplate id="LdrwTemplate" closed="widgetClosedHandler(event)" open="widgetOpenedHandler(event)"
+		minimized="widgetMinimizedHandler(event)" width="340" height="200">
+		
+		<s:Group id="StateIdentify" height="100%" width="100%" visible="false" visible.StateIdentify="true">
+			
+			<s:layout>
+				<s:VerticalLayout gap="5" horizontalAlign="center"/>
+			</s:layout>
+			<mx:Text id="txtLabel" text="{descriptionLabel}" width="100%" textAlign="left"/>
+
+			<s:BorderContainer width="100%" height="50" backgroundColor="0x99CCFF" borderVisible="true"
+				color="0x006699" alpha="0.90">	
+				<mx:ToggleButtonBar id="myTbb" itemClick="activateClick(event);"
+					labelField="null" selectedIndex="-1" toggleOnClick="true" top="4" left="10">
+					<fx:Object icon="@Embed(source='assets/i_draw_point.png')" label="MAPPOINT"/>
+					<fx:Object icon="@Embed(source='assets/i_draw_line.png')" label="POLYLINE"/>
+					<fx:Object icon="@Embed(source='assets/i_draw_poly.png')" label="POLYGON"/>
+					<fx:Object icon="@Embed(source='assets/i_draw_rect.png')" label="EXTENT"/>
+					<!--<fx:Object icon="@Embed(source='assets/images/i_clear.png')" label="CLEAR"/>-->
+				</mx:ToggleButtonBar>
+			</s:BorderContainer>
+		</s:Group>
+		
+		<s:Group id="resultsList" height="100%" width="100%"  visible.resultsList="true" visible="false">
+			<s:layout>
+				<s:VerticalLayout gap="1"/>
+			</s:layout>
+			<s:HGroup id="boxMessage" includeInLayout="{msgVisible}" visible="{msgVisible}" width="100%">
+				<mx:SWFLoader id="swfMessage" source="{myIconURL + 'loader.swf'}" visible="false"/>
+				<s:Label id="txtMessage" text="" width="90%"/> 
+			</s:HGroup>
+			
+			<mx:Panel id="bPanel" title="{getTitle}" width="100%" height="100%" color="0x999999" visible="true">
+				<mx:HDividedBox width="100%" height="100%" dividerRelease="handleDivderRelease();">
+					<mx:VBox id="myControlBox" width="95" height="100%" verticalGap="1" horizontalScrollPolicy="off">
+						<mx:Label text="Selected Cols" fontWeight="bold" color="#000000"/>
+						<mx:List id="myListCols" width="95" height="100%" dataProvider="{myListColsLabels}"
+							labelField="label" borderColor="#000000"
+							allowMultipleSelection="false" click="hideShowMyGridCols();"
+							selectedIndices="[1,2]"/>
+						<mx:TextArea wordWrap="true" selectable="false" editable="false" borderStyle="none"
+							text="{getTxt}" width="95" height="50"/>
+						<mx:Spacer height="5" />
+						<mx:Button width="95" label="Show all" click="showAll();"/>
+						<mx:Button width="95" label="Default" click="setDefault();"/>
+						<mx:Button width="95" label="Hide all" click="hideAll();"/>
+					</mx:VBox>
+					
+					<mx:VBox width="100%" height="100%">
+						<mx:AdvancedDataGrid id="myGrid" width="100%" height="100%" visible="false" color="0x006699"
+							editable="false" itemClick="onItemClick(event);" dataProvider="{myFeatures}"
+							keyUp="myKeyUpHandler(event);" allowMultipleSelection="true" selectionMode="multipleCells"
+							selectedIndex="0" selectable="true">		
+							<mx:columns>
+								<mx:AdvancedDataGridColumn width="18" headerText="Count" dataField="COUNT" visible="false"/>
+								<mx:AdvancedDataGridColumn width="200" headerText="Name" dataField="NAME" visible="true"/>
+								<mx:AdvancedDataGridColumn width="80" headerText="Click" dataField="myBTN" visible="true">
+									<mx:itemRenderer>
+										<fx:Component>
+											<mx:Button fontWeight="bold" label="Open" labelPlacement="right" 
+												paddingLeft="5" color="0x000000"/><!--
+											selected="{(data.myBTN === 'false')?true:false}"
+											click="{data.myBTN = (data.myBTN !== 'false')?'true':'false';}" /-->
+										</fx:Component>
+									</mx:itemRenderer>
+								</mx:AdvancedDataGridColumn>
+							</mx:columns>
+						</mx:AdvancedDataGrid>
+						<!--for RadioButton http://blog.flexexamples.com/2008/01/27/using-a-checkbox-control-as-a-list-item-renderer-in-flex/-->
+					</mx:VBox>
+				</mx:HDividedBox>
+			</mx:Panel>
+		</s:Group>
+		
+		<s:Group id="clearGraphic" visible="false" visible.clearGraphic="true" width="100%" height="100%">
+			<s:layout>
+				<s:VerticalLayout gap="6" horizontalAlign="center"/>
+			</s:layout>
+			<mx:Text id="myTxtLabel" text="{descriptLabel}" width="100%" textAlign="center"
+				fontWeight="normal"/>
+			<mx:HBox horizontalAlign="center" width="100%" ><!--assets/images/i_clear.png-->
+				<mx:Image click="clearMap();" source="{myIconURL + 'i_clear.png'}" useHandCursor="true"
+					buttonMode="true" toolTip="{clearLabel}" width="40" height="40"/>
+			</mx:HBox>	
+		</s:Group>
+		
+	</viewer:WidgetTemplate>
+</viewer:BaseWidget>

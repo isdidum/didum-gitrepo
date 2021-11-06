@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:jfire="gov.iowadot.jetfire.operations.*"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   pageTitle="Example - Lat/Long to LRS Tester"
+			   minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<jfire:LatLongToLrs id="convert">
+		</jfire:LatLongToLrs>
+	</fx:Declarations>
+	<s:VGroup top="300" left="200">
+		<s:HGroup>
+			<s:Label text="Enter Longitude:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+			<s:TextInput id="inputX" text="-93.57"/>
+		</s:HGroup>
+		<s:HGroup>
+			<s:Label text="Enter Latitude:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+			<s:TextInput id="inputY" text="42.03"/>
+			<s:Button x="371" y="159" label="Enter" click="{convert.Lon=new Number(inputX.text);convert.Lat=new Number(inputY.text)}"/>
+		</s:HGroup>
+		<mx:HRule width="100%" height="5" strokeColor="#00000F" />
+		<s:Label text="X:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+		<s:TextArea id="retVal1" x="121" y="189" width="320" height="50" borderVisible="false" enabled="true"  
+					text="{convert.X}"/>
+		<s:Label text="Y:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+		<s:TextArea id="retVal2" x="121" y="189" width="320" height="50" borderVisible="false" enabled="true"  
+					text="{convert.Y}"/>
+	</s:VGroup>
+</s:Application>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   pageTitle="Flex Facility Map">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.FindEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.tasks.supportClasses.FindParameters;
+			import com.esri.ags.tasks.supportClasses.FindResult;
+			import com.esri.ags.tools.NavigationTool;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			
+			private function doFind():void {
+				var FindParams:FindParameters = new FindParameters();
+				
+				/*["YEAR_BUILT", "UKEY", "INVENTORY_NUMBER", "SQUARE_FOOTAGE", 
+				"PHONE_NUMBER", "BUILDING_TYPE", "DESCRIPTION1", "ADDRESS1"];*/
+				if(rdBtn0.selected == true){
+					FindParams.contains = true;
+					FindParams.layerIds = [0];
+					FindParams.outSpatialReference = myMap.spatialReference;
+					FindParams.returnGeometry = true;
+					FindParams.searchFields = ["ADDRESS1"];
+					FindParams.searchText = findTxt.text;
+					
+					findTask.execute(FindParams);
+				}else if(rdBtn1.selected == true){
+					FindParams.contains = true;
+					FindParams.layerIds = [0];
+					FindParams.outSpatialReference = myMap.spatialReference;
+					FindParams.returnGeometry = true;
+					FindParams.searchFields = ["INVENTORY_NUMBER"];
+					FindParams.searchText = findTxt.text; 
+					
+					findTask.execute(FindParams);	
+				}else if(rdBtn2.selected == true){
+					FindParams.contains = true;
+					FindParams.layerIds = [0];
+					FindParams.outSpatialReference = myMap.spatialReference;
+					FindParams.returnGeometry = true;
+					FindParams.searchFields = ["YEAR_BUILT"];
+					FindParams.searchText = findTxt.text;
+					
+					findTask.execute(FindParams);
+					
+				}
+			}
+			
+			private function findHandler(event:FindEvent):void {
+				myGraphicsLayer.clear();
+				
+				//resultSummary.text = "Results found: " + event.findResults.length;				
+				myGraphicsLayer.symbol = sfsFind;
+				
+				var resultCount:int = event.findResults.length;
+				
+				if (resultCount == 0) {
+					Alert.show("Search not found. \nPlease select the correct \nradio button and retry!");
+				} else {
+					
+					for(var k:int=0; k < resultCount; k++){					
+						var myFeatures:ArrayCollection = new ArrayCollection([
+							{
+								YEAR_BUILT: FindResult(event.findResults[k]).feature.attributes.YEAR_BUILT,
+								UKEY: FindResult(event.findResults[k]).feature.attributes.UKEY,					
+								INVENTORY_NUMBER: FindResult(event.findResults[k]).feature.attributes.INVENTORY_NUMBER,
+								SQUARE_FOOTAGE: FindResult(event.findResults[k]).feature.attributes.SQUARE_FOOTAGE,
+								PHONE_NUMBER: FindResult(event.findResults[k]).feature.attributes.PHONE_NUMBER,
+								BUILDING_TYPE: FindResult(event.findResults[k]).feature.attributes.BUILDING_TYPE,
+								DESCRIPTION1: FindResult(event.findResults[k]).feature.attributes.DESCRIPTION1,
+								ADDRESS1: FindResult(event.findResults[k]).feature.attributes.ADDRESS1
+							}
+						]);
+						myGrid.visible = true;
+						myGrid.dataProvider = myFeatures;
+					}
+					
+					//writes out features to textArea
+					var resultStr:Array = [], infoWinText:String;
+					for(var j:int=0; j < resultCount; j++){
+						var cntr:Number = (j+1);
+						resultStr[j] = "[" + cntr + "].   " + FindResult(event.findResults[j]).feature.attributes.YEAR_BUILT + " "  
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.UKEY + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.INVENTORY_NUMBER  + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.SQUARE_FOOTAGE + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.PHONE_NUMBER + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.BUILDING_TYPE + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.DESCRIPTION1 + ""
+							+ " \t\t\t " + FindResult(event.findResults[j]).feature.attributes.ADDRESS1;
+					}
+					
+					infoWinText = resultStr.join("<br />");
+					myLabel.visible = true;
+					myTxtArea.visible = true;
+					myTxtArea.alpha = 0.95;
+					myTxtArea.htmlText = infoWinText;
+					
+					// add feature as graphic to graphics layer
+					for (var i:int = 0; i < resultCount; i++) {
+						var graphic:Graphic = FindResult(event.findResults[i]).feature;
+						graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+						myGraphicsLayer.add(graphic);
+					}
+					
+					// zoom to extent of all features
+					var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+					var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+					myMap.extent = graphicsExtent.expand(2.4); // zoom out a little, was .expand(1.1)
+				}
+			}
+			
+			private function getCleanGraphic(): void {
+				myGraphicsLayer.clear();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!-- special tags -->
+	<fx:Declarations>
+		<esri:Extent id="myIniExtent" xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25" 
+					 spatialReference="{new SpatialReference(102113)}"/>
+		
+		<!-- Symbol for Find Result as Polygon -->
+		<esri:SimpleFillSymbol id="sfsFind" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Find Tasks myGriData(event);-->
+		<esri:FindTask id="findTask" showBusyCursor="true" 
+					   executeComplete="{findHandler(event);}"
+					   url="http://geonexus/ArcGIS/rest/services/Facilities/BuildingIndex/MapServer"/>
+		
+		<!--navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>
+		
+	</fx:Declarations>
+	
+	<!-- Left Panel -->
+	<s:Panel id="leftPanel" height="100%" color="0x3300FF" title="Search Map Contents" 
+			 borderVisible="false" backgroundColor="0xefefef" direction="ltr" left="5" 
+			 right="5" bottom="5" top="2.5">
+		
+		<s:BorderContainer width="20%" height="15%" backgroundColor="0xEEEEEE" borderVisible="false" 
+						   left="5" right="2" top="5">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="left"/>
+			</s:layout>
+			<!--<s:Label text="Search" color="0x006699"/>-->
+			<s:TextInput id="findTxt" width="100" focusColor="0xa2d2ff" color="0x808080" fontSize="12" 
+						 fontWeight="bold" enter="doFind();"/>
+			<s:Button click="doFind();" enabled="true" label="Search" 
+					  color="0x000000"/>
+		</s:BorderContainer>
+		
+		<!--Radio Buttons-->
+		<s:VGroup horizontalAlign="left" gap="10" left="15" top="40" color="0x000000">
+			<mx:RadioButton id="rdBtn0" selected="true" fontWeight="bold" 
+							label="Search by City Name" labelPlacement="right"/>
+			<mx:RadioButton id="rdBtn1" selected="false" fontWeight="bold" 
+							label="By Inventory Number" labelPlacement="right"/>
+			<mx:RadioButton id="rdBtn2" selected="false" fontWeight="bold" 
+							label="Also by Year Built" labelPlacement="right"/>
+		</s:VGroup>
+		
+		<!--Navigation ToolBar Buttons-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="10" horizontalAlign="left" paddingBottom="7"
+								paddingLeft="90" paddingRight="5" paddingTop="7"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<s:HGroup gap="10" width="30%">
+				<mx:Button click="navTool.zoomToPrevExtent()"
+						   width="35" height="35"/>
+				<mx:Button click="navTool.zoomToNextExtent()"
+						   width="35" height="35"/>
+				<mx:Button click="navTool.zoomToFullExtent()"
+						   width="35" height="35"/>
+				<mx:Button click="getCleanGraphic()"
+						   width="35" height="35"/>
+			</s:HGroup>
+		</s:controlBarContent>
+		
+	</s:Panel>
+	
+	<!-- Center Panel -->
+	<s:Panel id="centerPanel" width="100%" height="100%" color="0x3300FF" 
+			 title="Facility Web Map Application" borderVisible="true" autoLayout="true"
+			 backgroundColor="0xFFFFFF" direction="ltr" left="320" right="0" bottom="5" top="2.5">
+		
+		<mx:VDividedBox width="100%" height="80%">
+			<esri:Map id="myMap" extent="{myIniExtent.expand(1.0)}" 
+					  logoVisible="false" openHandCursorVisible="false">
+				<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Facilities/BuildingIndex/MapServer" />
+				<esri:GraphicsLayer id="myGraphicsLayer"/>
+			</esri:Map>
+			
+			<mx:Label id="myLabel" htmlText="Ctr Year  Ukey    Inventory    Sqr-Footage     Phone     Building     Description     City-Name" 
+					  left="0" right="0" top="0" fontSize="14" fontWeight="bold" fontStyle="italic" color="0xDB9900"
+					  visible="false"/>
+			<mx:TextArea id="myTxtArea" width="100%" height="20%" borderColor="0x999999" borderStyle="solid" 
+						 color="0x000000" editable="false" alpha="0.50" kerning="true" textAlign="left" 
+						 visible="false" left="5" right="5" bottom="5"/>
+			<!--
+			<mx:DataGrid width="100%" height="20%" color="0x006699" 
+			dataProvider="{findTask.executeLastResult}" 
+			visible="{findTask.executeLastResult != null}">
+			<mx:columns>
+			<mx:DataGridColumn width="70" dataField="layerId" headerText="Layer ID"/>
+			<mx:DataGridColumn dataField="value" headerText="Found Field Value"/>
+			<mx:DataGridColumn dataField="foundFieldName" headerText="Found Field Name"/>
+			<mx:DataGridColumn dataField="layerName" headerText="Layer Name"/>
+			</mx:columns>
+			</mx:DataGrid>
+			
+			-->
+			
+			<mx:DataGrid id="myGrid" width="100%" height="40%" color="0x006699">
+				<mx:columns> 
+					<mx:DataGridColumn width="70" dataField="YEAR_BUILT" headerText="Year Built"/>
+					<mx:DataGridColumn dataField="UKEY" headerText="Unique Key"/>
+					
+					<mx:DataGridColumn dataField="INVENTORY_NUMBER" headerText="Inventory"/>
+					<mx:DataGridColumn dataField="SQUARE_FOOTAGE"  headerText="Sqr-Footage"/>
+					
+					<mx:DataGridColumn dataField="PHONE_NUMBER" headerText="Phone"/>
+					<mx:DataGridColumn dataField="BUILDING_TYPE" headerText="Building"/>
+					
+					<mx:DataGridColumn dataField="DESCRIPTION1" headerText="Description"/>
+					<mx:DataGridColumn dataField="ADDRESS1" headerText="City Name"/> 
+				</mx:columns>
+			</mx:DataGrid>
+			<!-- dataProvider="{findTask.executeLastResult}" visible="{findTask.executeLastResult != null}" -->	
+		</mx:VDividedBox>
+	</s:Panel>
+	
+	
+</s:Application>

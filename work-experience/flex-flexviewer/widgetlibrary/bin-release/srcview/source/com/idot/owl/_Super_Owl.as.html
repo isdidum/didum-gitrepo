@@ -1,0 +1,347 @@
+<!-- saved from url=(0014)about:internet -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>_Super_Owl.as</title>
+<link rel="stylesheet" type="text/css" href="../../../../SourceStyles.css"/>
+</head>
+
+<body><pre><span class="ActionScriptASDoc">/**
+ * This is a generated class and is not intended for modification.  To customize behavior
+ * of this service wrapper you may modify the generated sub-class of this class - Owl.as.
+ */</span>
+<span class="ActionScriptpackage">package</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">idot</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">owl</span>
+<span class="ActionScriptBracket/Brace">{</span>
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">adobe</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">fiber</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">core</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">model_internal</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">adobe</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">fiber</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">services</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">wrapper</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">WebServiceWrapper</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">adobe</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">serializers</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">utility</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">TypeUtility</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">flash</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">utils</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">ByteArray</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span>;
+<span class="ActionScriptReserved">import</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">WebService</span>;
+
+<span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptMetadata">ExcludeClass</span><span class="ActionScriptBracket/Brace">]</span><span class="ActionScriptReserved">internal</span> <span class="ActionScriptclass">class</span> <span class="ActionScriptDefault_Text">_Super_Owl</span> <span class="ActionScriptReserved">extends</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">adobe</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">fiber</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">services</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">wrapper</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">WebServiceWrapper</span>
+<span class="ActionScriptBracket/Brace">{</span>
+    
+    <span class="ActionScriptComment">// Constructor
+</span>    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">_Super_Owl</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptComment">// initialize service control
+</span>        <span class="ActionScriptDefault_Text">_serviceControl</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">WebService</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">operations</span>:<span class="ActionScriptDefault_Text">Object</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">Object</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetCountyList"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetCountyList"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetCountyBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetCountyBorderWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetRPAWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetRPAWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetCityList"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetCityList"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetMapImageData"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">ByteArray</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetMapImageData"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetBridgeWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetBridgeWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetMPOWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetMPOWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetRPAList"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetRPAList"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetMPOList"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetMPOList"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetCityBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetCityBorderWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetStateBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetStateBorderWKT"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">operation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptReserved">new</span> <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">soap</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">mxml</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">Operation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptReserved">null</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptString">"GetFHWAList"</span><span class="ActionScriptBracket/Brace">)</span>;
+         <span class="ActionScriptDefault_Text">operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">resultType</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">Object</span>;
+        <span class="ActionScriptDefault_Text">operations</span><span class="ActionScriptBracket/Brace">[</span><span class="ActionScriptString">"GetFHWAList"</span><span class="ActionScriptBracket/Brace">]</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operation</span>;
+
+        <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">operations</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">operations</span>;
+        <span class="ActionScriptReserved">try</span>
+        <span class="ActionScriptBracket/Brace">{</span>
+            <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">convertResultHandler</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">com</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">adobe</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">serializers</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">utility</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">TypeUtility</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">convertResultHandler</span>;
+        <span class="ActionScriptBracket/Brace">}</span>
+        <span class="ActionScriptReserved">catch</span> <span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">e</span>: <span class="ActionScriptDefault_Text">Error</span><span class="ActionScriptBracket/Brace">)</span>
+        <span class="ActionScriptBracket/Brace">{</span> <span class="ActionScriptComment">/* Flex 3.4 and eralier does not support the convertResultHandler functionality. */</span> <span class="ActionScriptBracket/Brace">}</span>
+
+
+
+        <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">service</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptString">"OWL"</span>;
+        <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">port</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptString">"OWLSoap"</span>;
+        <span class="ActionScriptDefault_Text">wsdl</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptString">"http://owl/Service.asmx?wsdl"</span>;
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+
+
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">initialize</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetCountyList' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetCountyList</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetCountyList"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetCountyBorderWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetCountyBorderWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vCoNum</span>:<span class="ActionScriptDefault_Text">int</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">vYear</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetCountyBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vCoNum</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">vYear</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetRPAWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetRPAWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vRPANum</span>:<span class="ActionScriptDefault_Text">int</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetRPAWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vRPANum</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetCityList' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetCityList</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetCityList"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetMapImageData' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetMapImageData</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vMapUrl</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">x1</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">y1</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">x2</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">y2</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">SRID</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">width</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">height</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetMapImageData"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vMapUrl</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">x1</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">y1</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">x2</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">y2</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">SRID</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">width</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">height</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetBridgeWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetBridgeWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vFHWANum</span>:<span class="ActionScriptDefault_Text">int</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetBridgeWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vFHWANum</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetMPOWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetMPOWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vMPONum</span>:<span class="ActionScriptDefault_Text">int</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetMPOWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vMPONum</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetRPAList' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetRPAList</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetRPAList"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetMPOList' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetMPOList</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetMPOList"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetCityBorderWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetCityBorderWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vCityNum</span>:<span class="ActionScriptDefault_Text">int</span><span class="ActionScriptOperator">,</span> <span class="ActionScriptDefault_Text">vYear</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetCityBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vCityNum</span><span class="ActionScriptOperator">,</span><span class="ActionScriptDefault_Text">vYear</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetStateBorderWKT' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetStateBorderWKT</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span>:<span class="ActionScriptDefault_Text">String</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetStateBorderWKT"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptDefault_Text">vYear</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+    <span class="ActionScriptASDoc">/**
+      * This method is a generated wrapper used to call the 'GetFHWAList' operation. It returns an mx.rpc.AsyncToken whose 
+      * result property will be populated with the result of the operation when the server response is received. 
+      * To use this result from MXML code, define a CallResponder component and assign its token property to this method's return value. 
+      * You can then bind to CallResponder.lastResult or listen for the CallResponder.result or fault events.
+      *
+      * @see mx.rpc.AsyncToken
+      * @see mx.rpc.CallResponder 
+      *
+      * @return an mx.rpc.AsyncToken whose result property will be populated with the result of the operation when the server response is received.
+      */</span>
+    <span class="ActionScriptReserved">public</span> <span class="ActionScriptfunction">function</span> <span class="ActionScriptDefault_Text">GetFHWAList</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> : <span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span>
+    <span class="ActionScriptBracket/Brace">{</span>
+        <span class="ActionScriptDefault_Text">model_internal</span><span class="ActionScriptOperator">::</span><span class="ActionScriptDefault_Text">loadWSDLIfNecessary</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_operation</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AbstractOperation</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_serviceControl</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">getOperation</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptString">"GetFHWAList"</span><span class="ActionScriptBracket/Brace">)</span>;
+        <span class="ActionScriptvar">var</span> <span class="ActionScriptDefault_Text">_internal_token</span>:<span class="ActionScriptDefault_Text">mx</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">rpc</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">AsyncToken</span> <span class="ActionScriptOperator">=</span> <span class="ActionScriptDefault_Text">_internal_operation</span><span class="ActionScriptOperator">.</span><span class="ActionScriptDefault_Text">send</span><span class="ActionScriptBracket/Brace">(</span><span class="ActionScriptBracket/Brace">)</span> ;
+
+        <span class="ActionScriptReserved">return</span> <span class="ActionScriptDefault_Text">_internal_token</span>;
+    <span class="ActionScriptBracket/Brace">}</span>
+     
+<span class="ActionScriptBracket/Brace">}</span>
+
+<span class="ActionScriptBracket/Brace">}</span>
+</pre></body>
+</html>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Show-Hide dgColumns"
+	creationComplete="getArray();" >
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.advancedDataGridClasses.AdvancedDataGridColumn;
+			
+			[Bindable]private var myFeatures:ArrayCollection = new ArrayCollection();
+			[Bindable]private var getTitle:String = "Count : 0 ";
+			private var results:Array = new Array(10);
+			
+			private function getArray():void {
+				for(var k:int = 0; k < results.length; k++) {									
+					myFeatures.addItem({
+						COUNT: (k+1),
+						SOLVE1: (2*k*k + 1.5).toFixed(1),
+						SOLVE2: (2*k*k + 1.25).toFixed(2)
+					});
+					getTitle = "Count : " + myFeatures.length;
+				}
+			}
+			
+			[Bindable]private var myListColsLabels:Array = [{label:"Cntr"}, {label:"Fx1"}, {label:"Fx2"}];
+			
+			private function hideShowColsDG():void {
+				var myAdvGridCol:Array = myGrid.columns;
+				var myMxListCols:Array =  myListCols.selectedItems; 
+				var myAdvDGClassCol:AdvancedDataGridColumn;
+				var myGridHeaderTxtLbl:String; 
+				var myListColsLbls:String;
+				var colsVisible:Boolean
+				for (var i:int=0;i<myAdvGridCol.length;i++)  {
+					colsVisible = false
+					myAdvDGClassCol = myAdvGridCol[i];
+					myGridHeaderTxtLbl = myAdvDGClassCol.headerText; 
+					for (var j : int = 0; j < myMxListCols.length; j++)  {
+						if(myMxListCols[j] == null) continue;
+						myListColsLbls = myMxListCols[j].label;
+						if (myListColsLbls == myGridHeaderTxtLbl)  {
+							colsVisible = true;
+							break;
+						}			  
+					}       
+					if (colsVisible) {
+						myAdvDGClassCol.visible = true;
+					} else  {
+						myAdvDGClassCol.visible = false;
+					}
+				}
+			}
+			
+			private function showAll():void{
+				myListCols.selectedIndices = [0,1,2];
+				hideShowColsDG();
+			}
+			
+			private function hideAll():void{
+				myListCols.selectedIndices = [];
+				hideShowColsDG();
+			}
+			
+			private function setDefault():void{
+				myListCols.selectedIndices = [0,1];
+				hideShowColsDG();
+			}
+			
+			public var cntr:int=0;
+			private function handleDivderRelease():void{
+				if(cntr == 0){
+					myControlBox.width = 0;
+				}else if(cntr == 1){
+					myControlBox.width = 120;
+				}
+				cntr = (cntr + 1) % 2;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<mx:Panel id="bPanel" title="{getTitle}" width="500" height="600" color="0x999999" left="130" top="90">
+		<mx:HDividedBox height="100%" width="100%" dividerRelease="handleDivderRelease()">
+			<mx:VBox id="myControlBox" height="100%" width="120" maxWidth="120" verticalGap="0" horizontalScrollPolicy="off">
+				<mx:Label text="Selected columns" fontWeight="bold" />
+				<mx:List id="myListCols" height="100%" width="120" dataProvider="{myListColsLabels}"
+					labelField="label" borderColor="#000000"
+					allowMultipleSelection="true" click="hideShowColsDG();"
+					selectedIndices="[0,1]"/>
+				<mx:TextArea wordWrap="true" selectable="false" editable="false" borderStyle="none"
+					text="Ctrl/Shift for multiple selection" width="120" height="100"/>
+				<mx:Spacer height="5" />
+				<mx:Button label="Show all"  width="100%" click="showAll();"/>
+				<mx:Button label="Default"  width="100%" click="setDefault();"/>
+				<mx:Button label="Hide all" width="100%" click="hideAll();"/>
+			</mx:VBox>
+			
+			<mx:VBox height="100%" width="100%">
+				<mx:AdvancedDataGrid id="myGrid" width="100%" height="100%" visible="true" color="0x006699"
+					editable="false" dataProvider="{myFeatures}"
+					selectedIndex="0" selectable="true">		
+					<mx:columns>
+						<mx:AdvancedDataGridColumn width="18" headerText="Cntr" dataField="COUNT" visible="true"/>
+						<mx:AdvancedDataGridColumn width="130" headerText="Fx1" dataField="SOLVE1" visible="true"/>
+						<mx:AdvancedDataGridColumn width="130" headerText="Fx2" dataField="SOLVE2" visible="false"/>
+					</mx:columns>
+				</mx:AdvancedDataGrid>
+			</mx:VBox>
+		</mx:HDividedBox>
+	</mx:Panel>
+		
+</s:Application>

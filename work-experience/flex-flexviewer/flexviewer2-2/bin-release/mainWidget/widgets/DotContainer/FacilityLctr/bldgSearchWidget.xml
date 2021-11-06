@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2.1 - May 09, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+	<labels>
+	   <getlabel>Specify search here...</getlabel>
+	   <getdescriptlbl>Click dumpster to clear map graphicslayer:</getdescriptlbl>
+	   <getsearch>Search</getsearch>
+	   <gettoggle>Layer</gettoggle>
+	   <getresult>Results</getresult>
+	   <getclearlbl>Clear</getclearlbl>
+	</labels>
+</configuration>

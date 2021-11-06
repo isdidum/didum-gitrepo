@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<index>
+	<title>Source of WSComponentLibrary</title>
+	<nodes>
+		<node label="html-template">
+			<node label="history">
+				<node icon="cssIcon" label="history.css" url="source/html-template/history/history.css.html"/>
+				<node label="history.js" url="source/html-template/history/history.js.txt"/>
+				<node icon="htmlIcon" label="historyFrame.html" url="source/html-template/history/historyFrame.html"/>
+			</node>
+			<node icon="htmlIcon" label="index.template.html" url="source/html-template/index.template.html"/>
+			<node icon="swfIcon" label="playerProductInstall.swf" url="source/html-template/playerProductInstall.swf"/>
+			<node label="swfobject.js" url="source/html-template/swfobject.js.txt"/>
+		</node>
+		<node label="libs">
+		</node>
+		<node label="src">
+			<node icon="packageIcon" label="com.idot.jetfire" expanded="true">
+				<node icon="actionScriptIcon" label="_Super_Jetfire.as" url="source/com/idot/jetfire/_Super_Jetfire.as.html"/>
+				<node icon="actionScriptIcon" label="Jetfire.as" url="source/com/idot/jetfire/Jetfire.as.html"/>
+			</node>
+			<node label="com.idot.jetfire.operations">
+			</node>
+			<node label="com.idot.jetfire.visual">
+			</node>
+			<node icon="packageIcon" label="com.idot.owl" expanded="true">
+				<node icon="actionScriptIcon" label="_Super_Owl.as" url="source/com/idot/owl/_Super_Owl.as.html"/>
+				<node icon="actionScriptIcon" label="Owl.as" url="source/com/idot/owl/Owl.as.html"/>
+			</node>
+			<node icon="packageIcon" label="com.idot.owl.operations" expanded="true">
+				<node icon="actionScriptIcon" label="GetCityList.as" url="source/com/idot/owl/operations/GetCityList.as.html"/>
+				<node icon="actionScriptIcon" label="GetFHWAList.as" url="source/com/idot/owl/operations/GetFHWAList.as.html"/>
+				<node icon="actionScriptIcon" label="getOperations.as" url="source/com/idot/owl/operations/getOperations.as.html"/>
+				<node icon="actionScriptIcon" label="GetRPAList.as" url="source/com/idot/owl/operations/GetRPAList.as.html"/>
+				<node icon="actionScriptIcon" label="IOperation.as" url="source/com/idot/owl/operations/IOperation.as.html"/>
+			</node>
+			<node label="com.idot.owl.visual">
+			</node>
+			<node icon="mxmlAppIcon" selected="true" label="ComponentExample.mxml" url="source/ComponentExample.mxml.html"/>
+			<node icon="imageIcon" label="flexcode.jpg" url="source/flexcode.jpg.html"/>
+		</node>
+	</nodes>
+	<zipfile label="Download source (ZIP, 60K)" url="WSComponentLibrary.zip">
+	</zipfile>
+	<sdklink label="Download Flex SDK" url="http://www.adobe.com/go/flex4_sdk_download">
+	</sdklink>
+</index>

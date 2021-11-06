@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties analytics="false" mainApplicationPath="DidumFlexAPI.mxml" projectUUID="f62875f7-992a-4f37-a3f2-775249666119" version="6">
+  <compiler additionalCompilerArguments="-locale en_US" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="0">
+      <libraryPathEntry kind="4" path="">
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry kind="3" linkType="1" path="C:/DidumFlex/extractedFlex2_1/ArcGIS_Flex/libs/agslib-2.1-2010-09-17.swc" useDefaultLinkType="false"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="DidumAPI/myTests/EnhancedFacilites2.mxml"/>
+    <application path="DidumAPI/myTests/mOverInfoW.mxml"/>
+    <application path="DidumAPI/myProjects/geoSvc.mxml"/>
+    <application path="DidumAPI/myTests/allFieldsLidar.mxml"/>
+    <application path="DidumAPI/myTests/dataGrid_zoomTo.mxml"/>
+    <application path="DidumAPI/myProjects/ermspage.mxml"/>
+    <application path="DidumAPI/myProjects/bldgsearch.mxml"/>
+    <application path="DidumAPI/myTests/myTest.mxml"/>
+    <application path="DidumAPI/myTests/bldgsearch2.mxml"/>
+    <application path="index.mxml"/>
+    <application path="DidumAPI/myTests/featureLyr.mxml"/>
+    <application path="DidumAPI/myTests/dataGridShowHide.mxml"/>
+    <application path="DidumAPI/myTests/rScheitlin_1_11_2011.mxml"/>
+    <application path="DidumAPI/myProjects/AerialImg2.mxml"/>
+    <application path="DidumAPI/myTests/didumShowHideDG.mxml"/>
+    <application path="DidumAPI/myProjects/AerialImg.mxml"/>
+    <application path="DidumAPI/myTests/selectGraExt.mxml"/>
+    <application path="DidumAPI/myProjects/Shwetambari.mxml"/>
+    <application path="DidumAPI/myTests/DmcLyrRadioBtn2.mxml"/>
+    <application path="DidumAPI/myProjects/myContrSearch.mxml"/>
+    <application path="DeePackage/HelloWorld.mxml"/>
+    <application path="DidumAPI/myTests/gridTable.mxml"/>
+    <application path="DidumFlexAPI.mxml"/>
+    <application path="DeePackage/CollapsibleApp.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedLidar.mxml"/>
+    <application path="DidumAPI/myTests/forumTestPage.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedFacilites2_1.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedFact3Shuping.mxml"/>
+    <application path="DidumAPI/myTests/ersiNavTool.mxml"/>
+    <application path="DidumAPI/myTests/esriZoomTo.mxml"/>
+    <application path="DidumAPI/myTests/kenBuja.mxml"/>
+    <application path="DidumAPI/myProjects/CollapsiblePanelExample.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedFacilities.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedAerialImg.mxml"/>
+    <application path="DidumAPI/myProjects/fbldgsearch.mxml"/>
+    <application path="DidumAPI/myTests/rScheitlin_1_19_2011.mxml"/>
+    <application path="DidumAPI/myTests/crossover.mxml"/>
+    <application path="DidumAPI/myProjects/contrSearch.mxml"/>
+    <application path="DidumAPI/myProjects/Lidar.mxml"/>
+    <application path="DidumAPI/myTests/Shuping6_13_2011.mxml"/>
+    <application path="DidumAPI/myTests/cmbBox_ZoomTo.mxml"/>
+    <application path="DeePackage/windowOpener.mxml"/>
+    <application path="DidumAPI/myTests/DmcLyrRadioBtn.mxml"/>
+    <application path="DeePackage/winOpnerAS.mxml"/>
+    <application path="DidumAPI/myTests/EnhancedFacilityFinal.mxml"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+</actionScriptProperties>

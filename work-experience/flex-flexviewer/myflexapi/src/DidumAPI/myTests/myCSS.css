@@ -1,0 +1,12 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+
+.addHeader
+{
+	color: #3772EA;
+	fontSize: 16;
+	fontWeight: bold;
+}
+	

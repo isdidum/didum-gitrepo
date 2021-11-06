@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+    // Version 2.2.1 - Dec. 30, 2010
+    // Modified: Abraham, Didum - 4/12/2011
+    ///////////////////////////////////////////////////////////////////////////////
+    
+    The fields specified must use the EXACT alias of the field name as shown in the REST
+    service directory.
+    
+    iconField, inconprefix, and iconsuffix tags are for replacing the standard black 
+    circle with the orange arrow inside it. Be sure to use a small image.
+-->
+<configuration>
+	<identifylayeroption>top</identifylayeroption>
+	<identifytolerance>5</identifytolerance>
+	<defaultzoomscale>5000</defaultzoomscale>
+	<keepidentifyactive>true</keepidentifyactive>
+	<labels>
+		<zoom2message>Click to Zoom to Point</zoom2message>
+		<identifylabel>Identify/Clear</identifylabel>
+		<resultslabel>Results</resultslabel>
+		<descriptionlabel>Use the identify tool to identify features on the map 
+         or click dumpster to clear map graphicslayer:</descriptionlabel>
+		<pointlabel>Map Point Identify</pointlabel>
+		<clearlabel>Clear</clearlabel>
+		<loadinglabel>Loading...</loadinglabel>
+	</labels>
+	<useproxy>
+		<proxylayer>
+			<!--name>Imagery</name-->
+		</proxylayer>
+	</useproxy>
+	<layers onlythese="true">
+		<layer>
+			<name>LIDAR_TS</name>
+			<fields>Shape, NAME, PATH</fields>
+			<linkfield>PATH</linkfield>
+			<linkfield2></linkfield2>
+			<linkprefix></linkprefix>
+			<linksuffix></linksuffix>
+			<iconfield></iconfield>
+			<iconprefix></iconprefix>
+			<iconsuffix></iconsuffix>
+			<zoomscale>15000</zoomscale>
+			<forcescale>true</forcescale>
+		</layer>
+	<!--
+		<layer>
+			<name>LandUse</name>
+			<fields>LANDUSE_NAME</fields>
+			<linkfield></linkfield>
+			<linkprefix></linkprefix>
+			<linksuffix></linksuffix>
+			<iconfield></iconfield>
+			<iconprefix></iconprefix>
+			<iconsuffix></iconsuffix>
+			<zoomscale>15000</zoomscale>
+			<forcescale>true</forcescale>
+		</layer>
+		<layer>
+			<name>Parcels</name>
+			<fields>PARCELID</fields>
+			<linkfield></linkfield>
+			<linkprefix></linkprefix>
+			<linksuffix></linksuffix>
+			<iconfield></iconfield>
+			<iconprefix></iconprefix>
+			<iconsuffix></iconsuffix>
+			<zoomscale>12000</zoomscale>
+			<forcescale>true</forcescale>
+		</layer>
+		<layer>
+			<name>TrafficCams</name>
+			<fields>ONLINE, DESCRIPTION, LAST_UPDATED, URL</fields>
+			<linkfield>URL</linkfield>
+			<linkprefix></linkprefix>
+			<linksuffix></linksuffix>
+			<iconfield></iconfield>
+			<iconprefix></iconprefix>
+			<iconsuffix></iconsuffix>
+			<zoomscale>2000</zoomscale>
+			<forcescale>true</forcescale>
+		</layer>
+		<layer>
+			<name>PoliceStations</name>
+			<fields>PD_NAME, ADDRESS</fields>
+			<linkfield></linkfield>
+			<linkprefix></linkprefix>
+			<linksuffix></linksuffix>
+			<iconfield></iconfield>
+			<iconprefix></iconprefix>
+			<iconsuffix></iconsuffix>
+			<zoomscale>2000</zoomscale>
+			<forcescale>true</forcescale>
+		</layer>
+	-->
+	</layers>
+	<info>widgets/DotContainer/InfoTemp2/InfoPopup2Widget.swf</info>
+	<!--
+	<info>widgets/InfoTemplates/InfoPopupWidget.swf</info>
+	-->
+</configuration>

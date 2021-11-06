@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/halo"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	styleName="plain" xmlns:samples="com.esri.ags.samples.*"
+	xmlns:containers="com.iwobanas.containers.*"  
+	pageTitle="Flex Facility Map, Query-zoom"
+	xmlns:mx1="library://ns.adobe.com/flex/mx">
+	
+	
+	<fx:Script>
+		<![CDATA[
+			//http://www.iwobanas.com/2009/09/creating-collapsible-panel-in-flex-4/
+			import mx.collections.ArrayCollection;
+			import com.iwobanas.skins.CollapsiblePanelSkin;
+			
+			
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.tools.NavigationTool;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import mx.controls.Alert;
+			import mx.events.DataGridEvent;
+			import mx.events.ListEvent;
+			import mx.events.MoveEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.core.BitmapAsset;
+			
+			public var g:Graphic; //added public keyword
+			
+			//My adds (Robert Scheitlin) import mx.core.BitmapAsset;
+			[Embed(source="assets/images/w_down.png")]
+			[Bindable]private var downClass:Class;	
+			
+			[Embed(source="assets/images/w_up.png")]
+			[Bindable]private var upClass:Class;
+			
+			private var lastDivY:Number;	
+			//End my adds
+			
+			//My Change (Robert Scheitlin)
+			protected function vDivBox_clickHandler(event:Event):void
+			{
+				if (bPanel.titleIcon == downClass){
+					bPanel.titleIcon = upClass;
+					lastDivY = myGrid.height;
+					vDivBox.moveDivider(0,myGrid.height);
+				}else{
+					bPanel.titleIcon = downClass;
+					vDivBox.moveDivider(0,-lastDivY);
+				}
+			}
+			//End my Change
+			
+			private function doQuery():void
+			{
+				// clear the graphics layer
+				myGraphicsLayer.clear();
+				
+				var query:Query = new Query();
+				if(rdBtn0.selected === true){ //CO_NAME LIKE '%FAYETTE%' works for COUNTY_BORDERS_SO w/ where-clause
+					query.outSpatialReference = myMap.spatialReference; 
+					query.returnGeometry = true; //converts to lowercase then queries [line below]
+					query.where = "LOWER (ADDRESS1) LIKE '%"+ fText.text + "%'"; 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn1.selected === true){
+					query.outSpatialReference = myMap.spatialReference;
+					query.returnGeometry = true;
+					query.text = fText.text; //Inventory=ObjectID, there4 query.text 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn2.selected === true){
+					query.outSpatialReference = myMap.spatialReference;
+					query.returnGeometry = true;
+					query.where = "YEAR_BUILT='"+ fText.text +"'"; //"ADDRESS1 LIKE '%"+ fText.text + "%'";
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}
+				
+				
+				queryTask.execute(query, new AsyncResponder(onResult, onFault));
+				function onResult(featureSet:FeatureSet, token:Object = null):void
+				{
+					
+					if (featureSet.features.length == 0)
+					{
+						Alert.show("City Name search is case sensitive.\nNo data found. Please try again.");
+					}
+					else
+					{
+						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(featureSet.features);
+						if (graphicsExtent)
+						{
+							myMap.extent = graphicsExtent.expand(4); //Initial Expansion
+							bPanel.title = "Features : " + featureSet.features.length;
+							myGrid.visible = true;
+						}
+					}
+				}
+				function onFault(info:Object, token:Object = null):void
+				{
+					Alert.show(info.toString());
+				}
+			}
+			
+			
+			// Highlight facility on map as user moves mouse over datagrid	
+			private function onItemRollOver(event:ListEvent) : void
+			{
+				findGraphicByAttribute(event.itemRenderer.data).symbol = sms_fExp;
+			}
+			/*
+			private function onItemRollOut(event:ListEvent) : void
+			{
+				findGraphicByAttribute(event.itemRenderer.data).symbol = sfs_iExp;
+			}*/
+			
+			public function findGraphicByAttribute(attributes:Object) : Graphic
+			{
+				for each( var graphic : Graphic in myGraphicsLayer.graphicProvider)
+				{
+					if ( graphic.attributes === attributes)
+					{
+						myMap.extent = graphic.geometry.extent.expand(2.8); //Final Expansion
+						return graphic;
+					}
+				}			
+				return null;
+			}
+			
+			protected function vDivBox_moveHandler(event:MoveEvent):void
+			{
+				// TODO Auto-generated method stub
+				vDivBox.move(0,10000);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/halo";
+		@namespace containers "com.iwobanas.containers.*";
+		
+		containers|CollapsiblePanel {
+			skin-class: ClassReference('com.iwobanas.skins.CollapsiblePanelSkin');
+		}
+		
+	</fx:Style>
+	
+	<fx:Declarations>
+		<!--Fill Polygon with purple & draws solid blue line around Polygon on final expansion-->
+		<esri:SimpleFillSymbol id="sms_fExp" style="solid" alpha="0.6" color="0x6600FF">
+			<esri:SimpleLineSymbol width="4" color="0xFF0000" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Fill, draws solid red line around Polygon on initial expansion -->
+		<esri:SimpleFillSymbol id="sfs_iExp" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Layer with US States -->
+		<esri:QueryTask id="queryTask" showBusyCursor="true"
+			url="http://testgeonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer/0"
+			useAMF="true"/>
+		<!--if(useAMF=true)queryTask.url=http://testgeonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer/0-->
+		<!--SECTION WAS CONVERTED TO ACTIONSCRIPT TO EASE CODE MANIPULATION
+		<esri:Query id="query" outSpatialReference="{map.spatialReference}"
+		returnGeometry="true" text="{fText.text}" where="YEAR_BUILT = {fText.text}"
+		outFields="[ADDRESS1,BUILDING_TYPE,COST_CENTER,INVENTORY_NUMBER,PHONE_NUMBER,SQUARE_FOOTAGE,UKEY,YEAR_BUILT]">
+		</esri:Query>
+		-->
+		
+		<!--navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:HorizontalLayout gap="1" paddingRight="0" paddingLeft="0" paddingTop="0" paddingBottom="0" />
+	</s:layout><!--left="2" right="2" top="2.5" bottom="5"-->
+	
+	<containers:CollapsiblePanel height="100%" title="Collapsible Configuration">
+		
+		<!--<s:Panel id="centerPanel" width="100%" height="100%" color="0x3300FF" 
+			title="Facility Web Map Application" borderVisible="true" autoLayout="true"
+			backgroundColor="0xFFFFFF" direction="ltr" left="290" right="0" bottom="5" top="2.5">-->
+		
+		<!-- Left Panel -->
+		<s:Panel id="leftPanel" height="100%" color="0x3300FF" title="Map Contents" 
+			borderVisible="false" backgroundColor="0xefefef" direction="ltr" left="2" 
+			right="2" bottom="0" top="0">		
+			
+			<mx1:TabNavigator height="150" width="280" backgroundColor="0xB2BFC6" color="0x000000">
+				
+				<s:NavigatorContent id="myTab1" label="Search Item" color="0xEEEEEE">
+					<!--<mx:Box borderStyle="solid" width="270" height="110" backgroundColor="0xEEEEEE">-->
+					<s:BorderContainer backgroundColor="0xEEEEEE" borderVisible="false" 
+						left="5" right="5" top="0">		
+						<s:layout>
+							<s:HorizontalLayout horizontalAlign="left"/>
+						</s:layout>
+						<s:TextInput id="fText"	enter="doQuery()" width="100" focusColor="0xa2d2ff" 
+							toolTip="Select a radio-button &#13; then enter some data here"
+							color="0x66CCFF" borderColor="0xFF0000" fontSize="12" fontWeight="bold" top="10"/>
+						<s:Button click="doQuery()" label="Query" color="0x000000"/>
+					</s:BorderContainer>
+					<!--Radio Buttons-->
+					<s:VGroup horizontalAlign="left" gap="10" left="15" top="30" color="0x000000">
+						<mx1:RadioButton id="rdBtn0" selected="true" fontWeight="bold" 
+							label="Search by City Name" labelPlacement="right"/>
+						<mx1:RadioButton id="rdBtn1" selected="false" fontWeight="bold" 
+							label="By Inventory Number" labelPlacement="right"/>
+						<mx1:RadioButton id="rdBtn2" selected="false" fontWeight="bold" 
+							label="Also by Year Built" labelPlacement="right"/>
+					</s:VGroup>
+					<!--</mx:Box>-->
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent id="myTab2" label="Map Layer" color="0xEEEEEE">			
+					<!--Drop-DownList-->
+					<mx1:Box borderStyle="solid" left="5" paddingTop="10" paddingBottom="10" paddingLeft="10"
+						paddingRight="10" width="270" height="110" backgroundColor="0xEEEEEE">
+						<s:DropDownList id="myURL" width="190" horizontalCenter="0" requireSelection="true" 
+							selectedIndex="1" color="0x000000">
+							<s:ArrayList>
+								<fx:String>Facilities/PARCEL_SO_V</fx:String>
+								<fx:String>Facilities/BUILDING_SO_V</fx:String>
+								<!--<fx:String>Boundaries/Boundaries</fx:String>-->
+								<fx:String>Basemap/Basemap_Overlay</fx:String>
+							</s:ArrayList>
+						</s:DropDownList>
+					</mx1:Box>
+					<!--Dynamic Layer on/off-->
+					<samples:LayerTOC width="280" height="550" mapLayer="{myDynamicService}" 
+						top="120" left="0" color="0x000000"/>
+				</s:NavigatorContent>
+			</mx1:TabNavigator>		
+			
+			<!--Dynamic Layer on/off
+			<samples:LayerTOC width="280" mapLayer="{myDynamicService}" top="160" left="0" color="0x000000"/>-->
+			
+		</s:Panel>
+	</containers:CollapsiblePanel>
+
+	
+	<!-- Center Panel -->
+	<s:Panel id="centerPanel" width="100%" height="100%" color="0x3300FF" 
+		title="Facility Web Map Application" borderVisible="true" autoLayout="true"
+		backgroundColor="0xFFFFFF" direction="ltr" left="290" right="0" bottom="5" top="2.5">
+		
+		<!--Navigation ToolBar Buttons-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="10" horizontalAlign="center" paddingBottom="5"
+				paddingLeft="5" paddingRight="5" paddingTop="5"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<s:HGroup gap="10" width="30%">
+				<mx1:Button click="navTool.zoomToPrevExtent();" toolTip="Previous Extent"
+					disabledIcon="@Embed('assets/images/left.gif')"	
+					downIcon="@Embed('assets/images/left.gif')"
+					enabled="{!navTool.isFirstExtent}"
+					overIcon="@Embed('assets/images/left.gif')" 
+					upIcon="@Embed('assets/images/left.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="navTool.zoomToNextExtent();" toolTip="Next Extent"
+					disabledIcon="@Embed('assets/images/right.gif')" 
+					downIcon="@Embed('assets/images/right.gif')"
+					enabled="{!navTool.isLastExtent}"
+					overIcon="@Embed('assets/images/right.gif')"
+					upIcon="@Embed('assets/images/right.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="navTool.zoomToFullExtent();" toolTip="Full Extent"
+					downIcon="@Embed('assets/images/web.gif')"
+					overIcon="@Embed('assets/images/web.gif')"
+					upIcon="@Embed('assets/images/web.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="{myGraphicsLayer.clear(); navTool.deactivate();
+					bPanel.title='Features : 0'; myGrid.visible=false;}" 
+					downIcon="@Embed('assets/images/cancel.gif')"
+					enabled="true" toolTip="Clear Graphic"
+					overIcon="@Embed('assets/images/cancel.gif')"
+					upIcon="@Embed('assets/images/cancel.gif')" width="35" height="35"/>
+				<!--More Navigation Tools-->
+				<mx1:Button id="myZoomIn" click="navTool.activate(NavigationTool.ZOOM_IN);"
+					disabledIcon="@Embed('assets/images/zoomin.gif')"	
+					downIcon="@Embed('assets/images/zoomin.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="ZoomIn"
+					overIcon="@Embed('assets/images/zoomin.gif')" 
+					upIcon="@Embed('assets/images/zoomin.gif')" width="35" height="35"/>
+				<mx1:Button id="myZoomOut" click="navTool.activate(NavigationTool.ZOOM_OUT);"
+					disabledIcon="@Embed('assets/images/zoomout.gif')" 
+					downIcon="@Embed('assets/images/zoomout.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="ZoomOut"
+					overIcon="@Embed('assets/images/zoomout.gif')"
+					upIcon="@Embed('assets/images/zoomout.gif')" width="35" height="35"/>
+				<mx1:Button id="myPan" click="navTool.activate(NavigationTool.PAN);"
+					disabledIcon="@Embed('assets/images/hand.gif')" 
+					downIcon="@Embed('assets/images/hand.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="Pan"
+					overIcon="@Embed('assets/images/hand.gif')"
+					upIcon="@Embed('assets/images/hand.gif')" width="35" height="35"/>
+			</s:HGroup>
+		</s:controlBarContent>
+		
+		<mx1:VDividedBox id="vDivBox" width="100%" height="100%" click="vDivBox_clickHandler(event)">
+			<esri:Map id="myMap" openHandCursorVisible="false" logoVisible="false">
+				<esri:extent>
+					<esri:Extent xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25">
+						<esri:SpatialReference wkid="102113"/>
+					</esri:Extent>
+				</esri:extent>
+				<!--Current map layers-->
+				<esri:ArcGISTiledMapServiceLayer visible="{getId.selectedIndex == 0}" alpha="1.0"
+					url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+				<!--must be the 2nd layer inorder to see layer-label from building_so_v-->
+				<esri:ArcGISTiledMapServiceLayer visible="{getId.selectedIndex == 1}" alpha="1.0"
+					url="http://testgeonexus/ArcGIS/rest/services/AerialImagery/Aerial_Imagery/MapServer"/> 
+				<!--show at last zoom level
+				<esri:ArcGISImageServiceLayer visible="{getId.selectedIndex == 1}" alpha="1.0"
+				url="http://testgeonexus/ArcGIS/rest/services/Imagery_Statewide/NAIP2009_Mercator/ImageServer"/>
+				-->
+				<esri:ArcGISDynamicMapServiceLayer id="myDynamicService" load="myDynamicService.defaultVisibleLayers()"
+					url="http://testgeonexus/ArcGIS/rest/services/{myURL.selectedItem}/MapServer" alpha="1.0"/>
+				
+				<esri:GraphicsLayer id="myGraphicsLayer" symbol="{sfs_iExp}"
+					graphicProvider="{queryTask.executeLastResult.features}"/>
+			</esri:Map>
+			<!--<samples:LayerTOC width="210" height="100%" mapLayer="{myDynamicService}"/>-->
+			<mx1:Panel id="bPanel" titleIcon="{downClass}" width="100%" height="38%" color="0x000000" 
+				title="Features : 0" bottom="0" left="0" right="0">
+				<mx1:DataGrid id="myGrid" width="100%" height="100%" visible="false"
+					dataProvider="{queryTask.executeLastResult.attributes}" itemClick="onItemRollOver(event)"/>	
+				<!--itemRollOut="onItemRollOut(event)"-->
+			</mx1:Panel>			
+		</mx1:VDividedBox>
+	
+		<!--Standalone ButtonBar-->	
+		<s:ButtonBar id="getId" selectedIndex="0" right="2" top="0">
+			<s:dataProvider>
+				<s:ArrayList>
+					<fx:String>Basemap</fx:String>
+					<fx:String>Imagery</fx:String>
+				</s:ArrayList>
+			</s:dataProvider>
+		</s:ButtonBar>
+	</s:Panel>
+</s:Application>

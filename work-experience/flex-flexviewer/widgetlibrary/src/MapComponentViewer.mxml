@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   minWidth="955" minHeight="600" 
+			   xmlns:esri="http://www.esri.com/2008/ags" 
+			   xmlns:visual="gov.iowadot.visual.*" 
+			   xmlns:applications="gov.iowadot.visual.applications.*"
+			   pageTitle="Locator Tester">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<esri:Map id="map">
+		<esri:extent>
+		<esri:Extent xmin="-10757864.3579" ymin="4920670.7181" xmax="-10034365.0849" ymax="5388737.4223">                
+			<esri:SpatialReference wkid="102113"/>            
+		</esri:Extent>
+		</esri:extent>
+		<esri:ArcGISTiledMapServiceLayer            
+			url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+	</esri:Map>
+
+	<applications:pointExtentWidget MapControl="{map}" bottom="175" right="125">
+	</applications:pointExtentWidget>
+</s:Application>

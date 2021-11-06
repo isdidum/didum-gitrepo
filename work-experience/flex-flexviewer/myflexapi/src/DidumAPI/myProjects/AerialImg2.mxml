@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Identify Aerial Imagery"> 
+	
+	<!-- Author: Didum Abraham
+	Credit To: ERSI 
+	Purpose: This program allows a user to click on the map graphic to identify features, using the
+	identifyTask. It produces its outputs in a TextArea and allows the features returned to
+	be clickable as hyperlinks.
+	-->
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.SpatialReference;
+			//import com.esri.ags.layers.ArcGISImageServiceLayer;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.symbols.InfoSymbol;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			//for Navigation Tool
+			import com.esri.ags.tools.NavigationTool;
+			import mx.logging.LogEventLevel;			
+			import spark.events.IndexChangeEvent;
+			
+			
+			import flash.net.navigateToURL;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			
+			private var lastClick:MapPoint;
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			
+			private function mapIdentify(event:MapMouseEvent):void {
+				myGraphicsLayer.clear();
+				
+				var identifyParams:IdentifyParameters = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = event.mapPoint;
+				identifyParams.mapExtent = myMap.extent;
+				identifyParams.width = myMap.width;
+				identifyParams.height = myMap.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = myMap.spatialReference;
+				//identifyParams.layerOption = "visible"; //IdentifyParameters.LAYER_OPTION_ALL;
+				
+				lastClick = event.mapPoint;
+				var clickGraphic:Graphic = new Graphic(lastClick, clickPtSym);
+				myGraphicsLayer.add(clickGraphic);
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, clickGraphic));
+			}
+			
+			private function myResultFunction(results:Array, clickGraphic:Graphic=null):void {
+				if(results && results.length > 0){
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;
+					//var myTxtArea:TextArea = new TextArea();
+					var mapPoint:MapPoint = MapPoint(clickGraphic.geometry);
+					var myPoint:Point = myMap.toScreen(mapPoint);
+					var myLabel:String, infoWinText:String;
+					
+					switch(resultGraphic.geometry.type) {
+						case Geometry.POLYGON: {
+							/* This basically allows point clicked to a single polygon selection
+							myLabel = "LiDAR Tile  [" + resultGraphic.attributes.NAME + "]";
+							//infoWinText =  "<a href='" + resultGraphic.attributes.PATH + "'>" + resultGraphic.attributes.PATH + "</a>";
+							infoWinText = "<a href='" + resultGraphic.attributes.PATH + "'>" + resultGraphic.attributes.NAME + "</a>";
+							resultGraphic.symbol = sfsIdentify; // case do display
+							break;
+							*/
+							/*var resultStr:Array = [];			//needed for textArea output				
+							for(var i:int=0; i<results.length; i++){ 
+							bPanel.title = "Length of features : " + results.length;
+							myLabel = "Available Imagery  (features length = " + (i+1) + ")";
+							resultStr[i] = "[" + (i+1) + "].    <a href='" + results[i].feature.attributes.Service + "' target='_blank'>URL    </a>" 
+							//+ "<a href='#' onclick='myImg(\"" + results[i].feature.attributes.Service + "\");'>[image]    </a>"  
+							+ "<a href='" + results[i].feature.attributes.ImageryPat + "' target='_blank'>Path    </a>"
+							+ results[i].feature.attributes.ServiceNam;
+							}
+							infoWinText = resultStr.join("<br />");
+							*/
+							
+							
+							/* This allows the population of datagrid */					
+							var myFeatures:ArrayCollection = new ArrayCollection();
+							for(var k:int = 0; k < results.length; k++){	
+								var cntr2:Number = (k+1);
+								bPanel.title = "Available Imagery (Count : " + results.length + ")";
+								
+								myFeatures.addItem(
+									{
+										COUNT: cntr2,
+										Service: results[k].feature.attributes.Service,					
+										ImageryPat: results[k].feature.attributes.ImageryPat,
+										ServiceNam: results[k].feature.attributes.ServiceNam,
+										ViewImage: " "
+									}
+								);
+								myGrid.visible = true;
+								myGrid.dataProvider = myFeatures;
+							}
+							//*/
+							break;
+						}
+					}
+					lastIdentifyResultGraphic = resultGraphic;
+					
+					//myTxtArea.width = 280;
+					//myTxtArea.height = 150;
+					//myTxtArea.editable = false;
+					//myTxtArea.htmlText = infoWinText; //could use myTxtArea.text = infoWindowText w/o html tags
+					//myMap.infoWindow.content = myTxtArea;
+					//myMap.infoWindow.label = myLabel;
+					//myMap.infoWindow.show(myMap.toMap(myPoint));
+				}
+			}
+			
+			private function myFaultFunction(error:Object, clickGraphic:Graphic=null):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			private function initApp():void {
+				//console message deployed in debug mode
+				trace("Creation completed for map with " + myMap.extent.toString());
+			}
+			
+			private function myGrid_itemClick(event:ListEvent):void {
+				
+				switch(event.columnIndex){
+					case 1: {
+						var myStr:String = myGrid.selectedItem.Service;
+						navigateToURL(new URLRequest(myStr), '_blank');
+						break;
+					}
+					case 2: {
+						var myStr2:String = myGrid.selectedItem.ImageryPat;
+						navigateToURL(new URLRequest(myStr2), '_blank');
+						break;
+					}
+					case 4: {
+						//var gURL:String = event.itemRenderer.data.Service;
+						myImageTile.url = event.itemRenderer.data.Service;
+						//var imageryTile:ArcGISImageServiceLayer = new ArcGISImageServiceLayer(gURL);
+						
+						myGraphicsLayer.clear();
+						
+						myGrid.addEventListener(MouseEvent.MOUSE_OVER, myLyrAdd); //when added to myMap, it works
+						myGrid.addEventListener(MouseEvent.MOUSE_WHEEL, myLyrDelete); //when added to myMap, it works
+						
+						function myLyrAdd():void { //was -1,0
+							//myGrid.removeEventListener(MouseEvent.MOUSE_OVER, myLyrAdd);
+							myMap.addLayer(myImageTile, 0); //-1=place img on top
+							myMap.reorderLayer(myImageTile.url,0); //1=places img on top, 0=places img underneath
+							//myImageTile.alpha = 0.50;
+						}
+						
+						function myLyrDelete():void {
+							myMap.removeLayer(myImageTile);
+						}
+						//myGrid.removeEventListener()MouseEvent.MOUSE_OVER, myLyrAdd);
+						//myGrid.removeEventListener(MouseEvent.MOUSE_OUT, myLyrDelete); //allows imgT on graphic to be visible
+						break;
+						}
+						default : 
+						{
+							myGraphicsLayer.clear();
+							//myMap.removeAllLayers();
+							//myImageTile.refresh();
+							break;
+						}
+					}
+				}
+				// for navigation tool	
+				private function tbb_changeHandler(event:IndexChangeEvent):void
+				{
+					switch (tbb.selectedItem)
+					{
+						case "Zoom In":
+						{
+							navTool.activate(NavigationTool.ZOOM_IN);
+							break;
+						}
+						case "Zoom Out":
+						{
+							navTool.activate(NavigationTool.ZOOM_OUT);
+							break;
+						}
+						case "Pan":
+						{
+							navTool.activate(NavigationTool.PAN);
+							break;
+						}
+						default:
+						{
+							navTool.deactivate();
+							break;
+						}
+					}
+				}
+				
+		]]>
+	</fx:Script>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace esri "http://www.esri.com/2008/ags";
+		@namespace components "com.esri.ags.components.*";
+		
+		components|InfoWindow {
+			content-background-alpha : 1.0; 
+			background-color : #FFFF00; /* =yellow*/
+			background-alpha : 0.8;
+			color : black;
+			border-style : solid;
+		}
+	</fx:Style>
+	
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="clickPtSym" color="0x00FF00" size="12" style="square"/>
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" disableClientCaching="true" 
+			url="http://geonexus/ArcGIS/rest/services/AerialImagery/GeoNexusAerialImageryDB/MapServer" />
+		<!-- for navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>		
+		<mx:TraceTarget includeCategory="true" includeLevel="true" includeTime="true" 
+			level="{LogEventLevel.DEBUG}"/>
+		<!-- The output from TraceTarget is available when debugging this sample in Flash Builder -->
+		
+	</fx:Declarations>
+	<!--main panel-->
+	<s:Panel id="mainPanel" title="Aerial Imagery Web Map Application" height="100%" width="100%" color="0x000000" borderVisible="true" 
+		backgroundColor="0xFFFFFF" direction="ltr" left="0" right="0" bottom="0" top="0">
+		
+		<!-- For Navigation Tool-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="0" horizontalAlign="center" paddingBottom="3"
+				paddingLeft="10" paddingRight="10" paddingTop="3"/>
+		</s:controlBarLayout>
+		<s:controlBarContent >
+			<s:ButtonBar id="tbb" change="tbb_changeHandler(event)">
+				<s:ArrayList>
+					<fx:String>Zoom In</fx:String>
+					<fx:String>Zoom Out</fx:String>
+					<fx:String>Pan</fx:String>
+				</s:ArrayList>
+			</s:ButtonBar>
+			<s:HGroup gap="0">
+				<s:Button click="navTool.zoomToPrevExtent()"
+					enabled="{!navTool.isFirstExtent}" label="Previous Extent"/>
+				<s:Button click="navTool.zoomToNextExtent()" enabled="{!navTool.isLastExtent}"
+					label="Next Extent"/>
+				<s:Button click="navTool.zoomToFullExtent()" label="Full Extent"/>
+			</s:HGroup>
+		</s:controlBarContent>
+		
+		<mx:VDividedBox width="100%" height="100%">			
+			<esri:Map id="myMap" level="7" mapClick="mapIdentify(event)" logoVisible="false"
+				extent="{new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113))}" 
+				openHandCursorVisible="false" left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+				<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer" alpha="0.45"/> 	
+				<esri:ArcGISImageServiceLayer id="myImageTile" alpha="1.0"/>
+				<!--	
+				<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"
+				visible="{gID.selectedIndex == 0}" alpha="0.45"/>
+				<esri:ArcGISImageServiceLayer url="http://geonexus/ArcGIS/rest/services/Imagery_Statewide/NAIP2009_Mercator/ImageServer"
+				visible="{gID.selectedIndex == 1}" alpha="0.65"/>
+				<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer" visible="false" />
+				-->
+				<esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/> 
+				<esri:GraphicsLayer id="myGraphicsLayer"/>
+			</esri:Map>
+			
+			<mx:Panel id="bPanel" width="100%" height="45%" color="0x999999" 
+				title="Available Imagery (Count : 0)">
+				<!--<mx:TextArea id="myTxtArea" width="100%" height="100%"/>-->
+				<!-- myImg(event);-->
+				<mx:DataGrid id="myGrid" width="100%" height="100%" visible="false" color="0x006699"
+					itemClick="myGrid_itemClick(event);" editable="false">			
+					<mx:columns>
+						<mx:DataGridColumn width="10" dataField="COUNT" headerText="#"/>
+						<mx:DataGridColumn width="90" dataField="Service" headerText="Click Service to View"/>
+						
+						<mx:DataGridColumn width="80" dataField="ImageryPat" headerText="Click Service Path to View"/>
+						<mx:DataGridColumn width="45" dataField="ServiceNam" headerText="Service Name"/>
+						<mx:DataGridColumn width="15" dataField="ViewImage" headerText="Click Image">
+							<mx:itemRenderer>
+								<fx:Component>
+									<!--Radio Buttons-->
+									<mx:RadioButton fontWeight="bold" 
+										label="On/Off" labelPlacement="right" paddingLeft="5"
+										selected="{(data.ViewImage === 'false')?true:false}"
+										click="{data.ViewImage = (data.ViewImage !== 'false')?'true':'false';}" />
+								</fx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+					</mx:columns>
+				</mx:DataGrid>
+				<!--for RadioButton http://blog.flexexamples.com/2008/01/27/using-a-checkbox-control-as-a-list-item-renderer-in-flex/-->
+			</mx:Panel>
+		</mx:VDividedBox>
+		
+	</s:Panel>
+	<!--	
+	<s:ButtonBar id="gID" right="5" selectedIndex="0" top="5">
+	<s:dataProvider>
+	<s:ArrayList>
+	<fx:String>Normal Bmap</fx:String>
+	<fx:String>Imagery Naip</fx:String>				
+	</s:ArrayList>
+	</s:dataProvider>
+	</s:ButtonBar>
+	-->
+</s:Application>

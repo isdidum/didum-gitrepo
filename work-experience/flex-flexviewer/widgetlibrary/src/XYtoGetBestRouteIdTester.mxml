@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:jfire="gov.iowadot.jetfire.operations.*"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   pageTitle="Example - XYtoRouteId"
+			   minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<jfire:SnapXYToDatum id="snapTo">
+		</jfire:SnapXYToDatum>
+		<jfire:GetBestRouteId id="getRouteId">			
+		</jfire:GetBestRouteId>
+	</fx:Declarations>
+	<s:VGroup top="300" left="200">
+		<s:HGroup>
+			<s:Label text="Enter X and Y:" width="107" height="20" fontSize="16" fontFamily="Georgia"/>
+			<s:TextInput id="inputX" text="298946.5"/>
+			<s:TextInput id="inputY" text="225782.17"/>
+			<s:Button x="371" y="159" label="Enter" click="{snapTo.X=parseInt(inputX.text);snapTo.Y=parseInt(inputY.text);getRouteId.XmlObject = snapTo.LinearReference}"/>
+		</s:HGroup>
+		<s:TextArea id="retVal" x="121" y="189" width="320" height="171" borderVisible="false" text="{getRouteId.RouteId}"/>
+	</s:VGroup>
+</s:Application>

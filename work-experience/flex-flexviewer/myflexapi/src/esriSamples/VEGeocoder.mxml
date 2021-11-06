@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Bing Geocoding with ArcGIS API for Flex">
+    <!--
+         This sample shows how to find the address (aka geocoding) for a certain address.
+
+         The solution is to use the addressToLocations() method on the VEGeocoder.
+
+         In this sample a user-provided address is sent to the server
+         for geocoding.  When the response comes back, the onResult()
+         function creates a graphic for the result and then sets the
+         map extent to the best view extent of the result.
+
+         To use VETiledLayer/VEGeocoder you will need access to Bing Maps (formerly Microsoft Virtual Earth).
+         See "Concepts" in the Resource Center for details.
+         http://help.arcgis.com/en/webapi/flex/help/index.html#ve_gettingstarted.htm
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.utils.WebMercatorUtil;
+            import com.esri.ags.virtualearth.VEGeocodeResult;
+
+            import mx.controls.Alert;
+            import mx.rpc.AsyncResponder;
+            import mx.rpc.Fault;
+
+            private function doFind():void
+            {
+                veGeocoder.addressToLocations(address.text, new AsyncResponder(onResult, onFault));
+                function onResult(results:Array, token:Object = null):void
+                {
+                    if (results.length > 0)
+                    {
+                        var veResult:VEGeocodeResult = results[0];
+                        var myGraphic:Graphic = new Graphic();
+                        myGraphic.geometry = WebMercatorUtil.geographicToWebMercator(veResult.location);
+                        myGraphic.symbol = mySymbol;
+                        myGraphic.toolTip = veResult.displayName;
+                        myGraphic.id = "graphic";
+                        myGraphicsLayer.add(myGraphic);
+                        myMap.extent = WebMercatorUtil.geographicToWebMercator(veResult.bestView) as Extent;
+                        myInfo.htmlText = "<b>Found:</b><br/>" + veResult.displayName;
+                    }
+                    else
+                    {
+                        myInfo.htmlText = "<b><font color='#FF0000'>Found nothing :(</b></font>";
+                        Alert.show("Sorry, couldn't find a location for this address"
+                                   + "\nAddress: " + address.text);
+                    }
+                }
+                function onFault(fault:Fault, token:Object = null):void
+                {
+                    myInfo.htmlText = "<b>Failure:</b> " + fault.faultString;
+                    Alert.show("Failure: \n" + fault.faultString, "VEGeocoder problem");
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <!-- Start Declarations -->
+    <fx:Declarations>
+        <!-- Replace this sample Bing key with your own Bing key, see http://help.arcgis.com/en/webapi/flex/help/index.html#ve_gettingstarted.htm -->
+        <fx:String id="bingKey">Al0VE_jsmagxk4LFghXGlK5JSHfC0tk-eHRubZv_eMYm6wzgQaStYks8g-wWcgk3</fx:String>
+
+        <esri:VEGeocoder id="veGeocoder"
+                         culture="en-US"
+                         key="{bingKey}"/>
+
+        <esri:SimpleMarkerSymbol id="mySymbol"
+                                 alpha="0.5"
+                                 color="0xFF0000"
+                                 size="19"
+                                 style="circle">
+            <esri:SimpleLineSymbol width="2"/>
+        </esri:SimpleMarkerSymbol>
+    </fx:Declarations>
+    <!-- End Declarations -->
+
+    <esri:Map id="myMap">
+        <esri:extent>
+            <esri:Extent xmin="-13046644" ymin="4028802" xmax="-13024380" ymax="4040893">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:VETiledLayer id="veTiledLayer"
+                           culture="en-US"
+                           key="{bingKey}"
+                           loadError="Alert.show(event.fault.faultString, 'VETiledLayer loadError')"
+                           mapStyle="road"/>
+        <esri:GraphicsLayer id="myGraphicsLayer"/>
+    </esri:Map>
+
+    <s:Panel top="5"
+             horizontalCenter="0"
+             title="Find an address">
+        <s:layout>
+            <s:VerticalLayout/>
+        </s:layout>
+        <mx:Form>
+            <mx:FormItem label="Address">
+                <mx:TextInput id="address"
+                              width="100%"
+                              text="380 New York St, CA"/>
+            </mx:FormItem>
+            <mx:FormItem>
+                <mx:Button click="doFind()" label="Find Address"/>
+            </mx:FormItem>
+        </mx:Form>
+        <mx:Text id="myInfo"
+                 width="100%"
+                 color="0x00FF00"
+                 textAlign="center"/>
+    </s:Panel>
+</s:Application>

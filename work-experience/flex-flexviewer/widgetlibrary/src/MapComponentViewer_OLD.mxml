@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   xmlns:comp="gov.iowadot.*"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   minWidth="955" minHeight="600">
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Map;
+			
+			import com.adobe.viewsource.ViewSource;
+			import com.esri.ags.geometry.MapPoint;
+
+			
+			public function onMove(event:MouseEvent):void{
+				var p:MapPoint = map.toMap(new Point(event.stageX, event.stageY)); ;
+				latLngText.text =  "y: " + p.y.toPrecision(8) + ", x: " + p.x.toPrecision(8);
+			}		
+		]]>
+		</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<esri:Map id="map" mouseMove="onMove(event)">
+	<esri:ArcGISTiledMapServiceLayer            
+		url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+	</esri:Map>
+	<s:TitleWindow title="Mouse Coordinates"
+				   bottom="70" 
+				   right="20"
+				   >
+		<s:Group height="100%" width="100%">
+			<s:Label text="Latitude/Longitude:" fontWeight="bold"/>
+			<s:Label x="0" y="14" fontSize="10" width="182" id="latLngText"/>
+		</s:Group>
+	</s:TitleWindow>
+
+</s:Application>

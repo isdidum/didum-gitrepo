@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Synchronizing user interaction">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			
+			private var highlightedGraphic:Graphic;
+			
+			private function onItemSelected(event : ListEvent) : void
+			{                
+				if (highlightedGraphic) { highlightedGraphic.symbol = null; }             
+				highlightedGraphic = findGraphicByAttribute(event.itemRenderer.data)
+				highlightedGraphic.symbol = highlightSymbol;   
+				
+				var graphics:Array = new Array();
+				graphics[0]=highlightedGraphic
+				var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphics);
+				map.extent = graphicsExtent.expand(2.0); // zoom to selected feature
+			}
+			
+			public function findGraphicByAttribute(attributes : Object) : Graphic
+			{
+				for each( var graphic : Graphic in myGraphicsLayer.graphicProvider)
+				{
+					if ( graphic.attributes === attributes)
+					{ 	
+						return graphic;
+					}
+				}            
+				return null;
+			}
+			
+			private function doQuery() : void
+			{
+				queryTask.execute(query, new AsyncResponder(onResult, onFault));
+				function onResult(featureSet : FeatureSet, token : Object = null) : void
+				{                                  
+					for each(var graphic : Graphic in featureSet.features)
+					{
+						graphic.toolTip = graphic.attributes.STATE_NAME + "\n" + graphic.attributes.SUB_REGION;
+						myGraphicsLayer.add(graphic);                
+					}                                       
+				}
+				function onFault(info : Object, token : Object = null) : void
+				{
+					Alert.show(info.toString());
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<esri:SimpleFillSymbol id="highlightSymbol" color="0xFF0000" />
+		<esri:QueryTask id="queryTask" url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/5" />
+		<esri:Query id="query" where="1=1" returnGeometry="true" outSpatialReference="{map.spatialReference}" outFields="['STATE_NAME','STATE_ABBR','SUB_REGION']"/>
+		
+	</fx:Declarations>
+	<esri:Map id="map" height="600" width="600" load="doQuery()">
+		<esri:extent>
+			<esri:Extent xmin="-126" ymin="24" xmax="-67" ymax="50" spatialReference="{map.spatialReference}" />                
+		</esri:extent>
+		<esri:ArcGISDynamicMapServiceLayer
+			url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer"/>
+		<esri:GraphicsLayer id="myGraphicsLayer"/>
+	</esri:Map>  
+	
+	<mx:DataGrid id="resultsGrid" dataProvider="{queryTask.executeLastResult.attributes}"                 
+		itemClick="onItemSelected(event)"
+		visible="{queryTask.executeLastResult != null}">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Name" dataField="STATE_NAME"/>
+			<mx:DataGridColumn headerText="Code" dataField="STATE_ABBR"/>
+			<mx:DataGridColumn headerText="Region" dataField="SUB_REGION"/>
+		</mx:columns>
+	</mx:DataGrid>
+	
+</s:Application>
+

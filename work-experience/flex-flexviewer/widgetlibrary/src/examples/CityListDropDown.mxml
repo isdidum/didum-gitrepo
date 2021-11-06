@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:operations="gov.iowadot.owl.operations.*"
+			   pageTitle="Example - City List"
+			   minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<operations:GetCityList id ="CityList">
+		</operations:GetCityList>
+	</fx:Declarations>
+			<s:Label x="5" y="5" text="City List Component">
+			</s:Label>
+			<s:List x="5" y="20" height="400" dataProvider="{CityList.CityName}">
+			</s:List>
+</s:Application>

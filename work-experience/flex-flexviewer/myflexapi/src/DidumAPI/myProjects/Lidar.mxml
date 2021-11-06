@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Identify Lidar"> 
+	
+	<!-- Author: Didum Abraham
+	Credit To: ERSI 
+	Purpose: This program allows a user to click on the map graphic to identify features, using the
+		identifyTask. It produces its outputs in an information Window with pointer to the exact
+		location where clicked.
+	-->
+	
+	<fx:Script>
+		<![CDATA[			
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.symbols.InfoSymbol;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			
+
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			import mx.rpc.AsyncResponder;
+			
+			private var lastClick:MapPoint; 
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			
+			private function mapIdentify(event:MapMouseEvent):void {
+				myGraphicsLayer.clear();
+				
+				var identifyParams:IdentifyParameters = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = event.mapPoint;
+				identifyParams.mapExtent = myMap.extent;
+				identifyParams.width = myMap.width;
+				identifyParams.height = myMap.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = myMap.spatialReference;
+				//identifyParams.layerOption = "visible"; //IdentifyParameters.LAYER_OPTION_ALL;
+				
+				lastClick = event.mapPoint;
+				var clickGraphic:Graphic = new Graphic(lastClick, clickPtSym);
+				myGraphicsLayer.add(clickGraphic);
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, clickGraphic));
+			}
+			
+			private function myResultFunction(results:Array, clickGraphic:Graphic=null):void {
+				if(results && results.length > 0){
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;
+					var myTxtArea:TextArea = new TextArea();
+					var mapPoint:MapPoint = MapPoint(clickGraphic.geometry);
+					var myPoint:Point = myMap.toScreen(mapPoint);
+					var myLabel:String, infoWinText:String;
+					
+					switch(resultGraphic.geometry.type) {
+						case Geometry.POLYGON: {
+							/* This basically allows point clicked to a single polygon selection
+							myLabel = "LiDAR Tile  [" + resultGraphic.attributes.NAME + "]";
+							//infoWinText =  "<a href='" + resultGraphic.attributes.PATH + "'>" + resultGraphic.attributes.PATH + "</a>";
+							infoWinText = "<a href='" + resultGraphic.attributes.PATH + "'>" + resultGraphic.attributes.NAME + "</a>";
+							resultGraphic.symbol = sfsIdentify; // case do display
+							break;
+							*/
+							var resultStr:Array = [];
+							//var myGrid:Grid;	//flash builder does not support html table tags, use Grid/Tile						
+							for(var i:int=0; i<results.length; i++){ 
+								myLabel = "LiDAR Tile  (length = " + (i+1) + ")";
+								resultStr[i] = "[" + (i+1) + "].   <a href='" + results[i].feature.attributes.PATH + "'>" + results[i].feature.attributes.NAME + "</a>";
+							}
+							infoWinText = resultStr.join("<br />");
+							break;
+						}
+					}
+					lastIdentifyResultGraphic = resultGraphic;
+					
+					myTxtArea.height = 100;
+					myTxtArea.width = 150;
+					myTxtArea.editable = false;
+					myTxtArea.htmlText = infoWinText; //could use myTxtArea.text = infoWindowText w/o html tags
+					myMap.infoWindow.content = myTxtArea;
+					myMap.infoWindow.label = myLabel;
+					myMap.infoWindow.show(myMap.toMap(myPoint));					
+				}
+			}
+			private function myFaultFunction(error:Object, clickGraphic:Graphic=null):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			private function initApp():void {
+				//console message deployed in debug mode
+				trace("Creation completed for map with " + myMap.extent.toString());
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace esri "http://www.esri.com/2008/ags";
+		@namespace components "com.esri.ags.components.*";
+		
+		components|InfoWindow {
+			content-background-alpha : 1.0; 
+			background-color : #00FFFF; /*was yellow*/
+			background-alpha : 0.8;
+			color : black;
+			border-style : solid;
+		}
+	</fx:Style>
+	
+	<fx:Declarations>
+		<!-- Symbol for Identify Result as Polygon -->
+		<esri:SimpleFillSymbol id="sfsIdentify"/>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="clickPtSym" color="0xFF0000" size="12" style="circle"/>
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" 
+			url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer" />
+		<!--Basemap iExtent-->
+		<esri:Extent id="myExtB" xmin="-10884964.57" ymin="4660003.62" xmax="-9907264.87" ymax="5649404.52" spatialReference="{new SpatialReference(102113)}" />
+	</fx:Declarations>
+	<!--main panel-->
+	<s:Panel id="mainPanel" title="Lidar Web Map Application" height="100%" width="100%" color="0x000000" borderVisible="true" 
+		backgroundColor="0xFFFFFF" direction="ltr" left="0" right="0" bottom="0" top="0">
+		<esri:Map id="myMap" extent="{myExtB.expand(1)}" mapClick="mapIdentify(event)" logoVisible="false"
+			openHandCursorVisible="false" left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+			<!--
+			<esri:infoWindowContent>
+			<mx:TextArea id="myTextArea" width="300" height="50"/>
+			</esri:infoWindowContent>
+			-->
+			<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"
+				visible="{gID.selectedIndex == 0}" alpha="8.5"/>
+			<esri:ArcGISImageServiceLayer url="http://geonexus/ArcGIS/rest/services/Imagery_Statewide/NAIP2009_Mercator/ImageServer"
+				visible="{gID.selectedIndex == 1}" alpha="0.50"/>
+			<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer" visible="true" alpha="0.45" />
+			<esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/> 
+			<esri:GraphicsLayer id="myGraphicsLayer"/>
+		</esri:Map>
+	</s:Panel>
+	<s:ButtonBar id="gID" right="5" selectedIndex="0" top="5">
+		<s:dataProvider>
+			<s:ArrayList>
+				<fx:String>Normal Bmap</fx:String>
+				<fx:String>Imagery Naip</fx:String>				
+			</s:ArrayList>
+		</s:dataProvider>
+	</s:ButtonBar>
+	
+</s:Application>

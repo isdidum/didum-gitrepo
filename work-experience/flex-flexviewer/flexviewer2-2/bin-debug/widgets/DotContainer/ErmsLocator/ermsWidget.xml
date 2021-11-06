@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2.1 - May 05, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+	<labels>
+	   <emain>Geometry DrawTool</emain>
+	   <edescriptlabel>Click dumpster to clear map graphicslayer:</edescriptlabel>
+	   <edescript2label>Use the geometry draw tools to identify features on the map:</edescript2label>
+	   <epoint>Point</epoint>
+	   <epolyline>Polyline</epolyline>
+	   <epolygon>Polygon</epolygon>
+	   <eextent>Extent</eextent>
+	   <eclearlabel>Clear</eclearlabel>
+	</labels>
+</configuration>

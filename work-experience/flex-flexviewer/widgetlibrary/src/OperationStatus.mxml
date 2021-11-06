@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   pageTitle="Operations Status Page"
+			   minWidth="955" minHeight="600">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Label text="Jetfire" paddingTop="10" fontWeight="bold"/>
+	<s:Group id="mainGroup">
+		<s:layout>
+			<s:HorizontalLayout/>
+		</s:layout>
+		<s:Label text="GetBestRouteId" />
+		<s:BorderContainer width="10" height="10" backgroundColor="green"/>
+		<s:BorderContainer width="10" height="10" backgroundColor="red"/>
+	</s:Group>  
+	<s:Group>
+		<s:layout>
+			<s:HorizontalLayout/>
+		</s:layout>
+		<s:Label text="GetGeographicExtentList" />
+		<s:BorderContainer width="10" height="10" backgroundColor="green"/>
+		<s:BorderContainer width="10" height="10" backgroundColor="red"/>
+	</s:Group>  
+	<s:Group>
+		<s:layout>
+			<s:HorizontalLayout/>
+		</s:layout>
+		<s:Label text="GetRefPostList" />
+		<s:BorderContainer width="10" height="10" backgroundColor="green"/>
+		<s:BorderContainer width="10" height="10" backgroundColor="red"/>
+	</s:Group>
+	<s:Label text="Owl" fontWeight="bold"/>
+	
+</s:Application>

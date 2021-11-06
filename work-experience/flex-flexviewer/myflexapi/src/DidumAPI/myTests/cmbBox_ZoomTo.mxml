@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="ZoomTo using ComboBox" >
+	
+	<!--  
+	This script queries US states and outputs states to a combobox
+	The user can now choose a state from the combobox and zoomto
+	-->
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.MapEvent;
+			import com.esri.ags.events.QueryEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.SpatialReference;			//added
+			
+			import mx.collections.ArrayList;
+			
+			import spark.events.IndexChangeEvent;
+			
+			protected function map_loadHandler(event:MapEvent):void
+			{
+				var query:Query = new Query();
+				query.outFields = ["CO_NAME"];
+				query.outSpatialReference = myMap.spatialReference;
+				query.returnGeometry = true; // 1=1, returns everything
+				query.where = "1=1"; //CO_NAME LIKE '%FAYETTE%' OR CO_NAME = 'FAYETTE'
+				queryTask.execute(query);
+			}
+			
+			protected function queryTask_executeCompleteHandler(event:QueryEvent):void
+			{
+				ddList.dataProvider = new ArrayList(event.featureSet.features);
+			}
+			
+			protected function ddListLabelFunction(item:Graphic):String
+			{
+				return (item.attributes["CO_NAME"]);
+			}
+			
+			protected function ddList_changeHandler(event:IndexChangeEvent):void
+			{
+				var stateExtent:Extent = Graphic(ddList.selectedItem).geometry.extent;
+				myMap.extent = stateExtent;
+				
+				// make sure the whole extent is visible
+				if (!myMap.extent.contains(stateExtent.expand(2.8))) //zoom out a little
+				{
+					myMap.level--;
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!--Fill Polygon with purple & draws solid blue line around Polygon
+		<esri:SimpleFillSymbol id="smsQuery" style="solid" alpha="0.6" color="0x6600FF">
+		<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>-->
+		
+		<esri:QueryTask id="queryTask" showBusyCursor="true" useAMF="false"
+			executeComplete="queryTask_executeCompleteHandler(event)"
+			url="http://testgeonexus/ArcGIS/rest/services/Boundaries/COUNTY_BORDERS_SO/MapServer/0"/>
+	</fx:Declarations>
+	
+	<s:controlBarContent>
+		<s:DropDownList id="ddList" width="200"	change="ddList_changeHandler(event)"
+			labelFunction="ddListLabelFunction"	prompt="Choose a state to zoom to"/>
+	</s:controlBarContent>
+	
+	<esri:Map id="myMap" level="7" load="map_loadHandler(event)" 
+		openHandCursorVisible="false" logoVisible="false" 
+		extent="{new Extent(-10853631.07, 4792323.73, -9933940.75, 5518781.25, new SpatialReference(102113))}">
+		<esri:ArcGISTiledMapServiceLayer 
+			url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+	</esri:Map>
+	
+</s:Application>

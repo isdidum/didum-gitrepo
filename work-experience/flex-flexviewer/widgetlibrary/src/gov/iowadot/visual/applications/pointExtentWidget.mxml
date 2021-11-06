@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group creationComplete="creationCompleteHandler(event)"
+		 xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.utils.WebMercatorUtil;
+			import com.esri.ags.geometry.Extent; 
+			import com.esri.ags.events.ExtentEvent;
+
+			import flash.geom.Point;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.MoveEvent;
+			
+			[Bindable]public var MapControl:Map; //bindable keyword added by Didum:May-18-2011
+			private var _window : UIComponent;
+			private var _originalPosition : Point;
+			private var _mouseDownPosition : Point;
+			
+			[Bindable]public var X:Number = 0;
+			
+			[Bindable]public var Y:Number = 0;
+			
+			[Bindable]public var mapExtent:Extent;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void {	
+				//bind map extent to data value
+				mapExtent = MapControl.extent;
+				
+				//mouseclick listener
+				this.MapControl.addEventListener(MouseEvent.MOUSE_MOVE, onMapMouseMove);
+			}
+			
+			private function onMapMouseMove(event:MouseEvent):void {
+				var screenPoint:Point = new Point(event.localX, event.localY);
+				var mapPoint:MapPoint =  this.MapControl.toMap(screenPoint);
+				const llPnt:MapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+				this.X = llPnt.x;
+				this.Y = llPnt.y;
+			}
+			
+			// convert current projected extent to geographic and show as such
+			protected function showExtentInGeographic(extent:Extent):String {	
+				const geoExtent:Extent = WebMercatorUtil.webMercatorToGeographic(MapControl.extent) as Extent;
+				// return geoExtent.toString() + ".." ;
+				return "Min X = " + geoExtent.xmin.toFixed(6)
+					+ " \nMin Y = " + geoExtent.ymin.toFixed(6)
+					+ " \nMax X = " + geoExtent.xmax.toFixed(6)
+					+ " \nMax Y = " + geoExtent.ymax.toFixed(6);
+			}
+
+			
+			private function onTitleBarMouseDown( event : MouseEvent ) : void {
+				// 1. set _window
+				_window = UIComponent( UIComponent( event.currentTarget ));
+				
+				// 2. add mouse move and mouse up event listeners
+				this.systemManager.addEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.addEventListener( MouseEvent.MOUSE_UP, doCommitMove, true );
+				
+				// 3. save offsets
+				_originalPosition = new Point( _window.x, _window.y );
+				_mouseDownPosition = new Point( event.stageX, event.stageY );
+			} 
+			
+			private function doMoving( event : MouseEvent ) : void {
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();
+				
+				// 2. calculate new position
+				var positionToMove : Point = new Point( _originalPosition.x + ( event.stageX - _mouseDownPosition.x ),
+					_originalPosition.y + ( event.stageY - _mouseDownPosition.y ) );
+				// 3. move window
+				_window.move( positionToMove.x, positionToMove.y );
+			}
+			
+			private function doCommitMove( event : MouseEvent ) : void {
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();	
+				
+				// 2. remove event listeners
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_UP, doCommitMove , true );
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:TitleWindow mouseDown="onTitleBarMouseDown( event )" 
+				   title="Mouse Coordinates" width="222">
+		<mx:VBox top="10" left ="10" bottom="10">
+			<s:Label text="Coordinates:" fontWeight="bold"/>
+			<s:Label text="&#13;Lat = {this.Y}" id="lblY"/>
+			<s:Label text="&#13;Lon = {this.X}" id="lblX"/>
+			<s:Label text="&#13;Extents:" fontWeight="bold"/>
+			<s:RichEditableText editable="false" text="{showExtentInGeographic(MapControl.extent)}"/>
+		</mx:VBox>
+	</s:TitleWindow >
+</s:Group>

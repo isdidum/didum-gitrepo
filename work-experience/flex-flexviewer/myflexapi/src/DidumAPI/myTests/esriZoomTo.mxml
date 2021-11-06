@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Find features and zoom in">
+	
+	<s:layout>
+		<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.FindEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.tasks.supportClasses.FindResult;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			
+			private function doFindCo():void {
+				findTaskCo.execute(FindParamsCo);
+			}
+						
+			private function findHandlerCo(event:FindEvent):void {
+				myGraphicsLayer.clear();
+				
+				resultSummary.text = "Results found: " + event.findResults.length;
+				myGraphicsLayer.symbol = sfsFindCo;
+				
+				var resultCount:int = event.findResults.length;
+				
+				if (resultCount == 0) {
+					Alert.show("No county found. Please change your search.");
+				} else {
+					// add feature as graphic to graphics layer
+					for (var i:int = 0; i < resultCount; i++) {
+						var graphic:Graphic = FindResult(event.findResults[i]).feature;
+						graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+						myGraphicsLayer.add(graphic);
+					}
+					
+					// zoom to extent of all features
+					var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+					var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+					myMap.extent = graphicsExtent.expand(1.1); // zoom out a little
+				}
+			}
+			
+			private function doFindBr():void {
+				findTaskBr.execute(FindParamsBr);
+			}
+			
+			private function findHandlerBr(event:FindEvent):void {
+				myGraphicsLayer.clear();
+				
+				resultSummary.text = "Results found: " + event.findResults.length;
+				myGraphicsLayer.symbol = sfsFindBr;
+				
+				var resultCount:int = event.findResults.length;
+				
+				if (resultCount == 0) {
+					Alert.show("No bridge found. Please change your search.");
+				} else {
+					// add feature as graphic to graphics layer
+					for (var i:int = 0; i < resultCount; i++) {
+						var graphic:Graphic = FindResult(event.findResults[i]).feature;
+						graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+						myGraphicsLayer.add(graphic);
+					}
+					
+					// zoom to extent of all features
+					var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+					var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+					myMap.extent = graphicsExtent.expand(1.1); // zoom out a little
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Symbol for Find Result as Polygon -->
+		<esri:SimpleFillSymbol id="sfsFindCo" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="5" color="0x00FF00" style="dashdot"/>
+		</esri:SimpleFillSymbol>
+		
+		<esri:SimpleFillSymbol id="sfsFindBr" alpha="0.90" style="solid">
+			<esri:SimpleLineSymbol width="15" color="0x00FF00" style="dashdot"/>
+		</esri:SimpleFillSymbol>			
+		
+		<!-- Find Tasks -->
+		<esri:FindTask id="findTaskCo" executeComplete="findHandlerCo(event)"
+			url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+		
+		<esri:FindParameters id="FindParamsCo" contains="true" layerIds="[48]"
+			outSpatialReference="{myMap.spatialReference}" returnGeometry="true"
+			searchFields="[CO_NAME, UKEY]" searchText="{findTxtCo.text}"/>
+		
+		<esri:FindTask id="findTaskBr" executeComplete="findHandlerBr(event)"
+			url="http://geonexus/ArcGIS/rest/services/GIMS_History/STRUC_CONTROL_XY_SO_V/MapServer"/>
+		
+		<esri:FindParameters id="FindParamsBr" contains="true" layerIds="[0]"
+			outSpatialReference="{myMap.spatialReference}" returnGeometry="true"
+			searchFields="[FHWANUM]" searchText="{findTxtBr.text}"/>
+	</fx:Declarations>
+	
+	<!--County-->
+	<s:BorderContainer width="100%" height="40" backgroundColor="0x006699" borderVisible="false">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+		</s:layout>
+		<s:Label text="Search county names"/>
+		<s:TextInput id="findTxtCo"	enter="doFindCo()" maxWidth="400" text="Story"/>
+		<s:Button click="doFindCo()" label="Find"/>
+	</s:BorderContainer>
+	<!--Bridge-->
+	<s:BorderContainer width="100%" height="40" backgroundColor="0x006699" borderVisible="false">
+		<s:layout>
+			<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+		</s:layout>
+		<s:Label text="Search bridge names"/>
+		<s:TextInput id="findTxtBr"	enter="doFindBr()" maxWidth="400" text="5110"/>
+		<s:Button click="doFindBr()" label="Find"/>
+	</s:BorderContainer>
+	
+	<s:Label id="resultSummary" height="15"/>
+		
+	<mx:VDividedBox width="100%" height="100%">
+		<esri:Map id="myMap" logoVisible="false" openHandCursorVisible="false">
+			
+			<esri:extent>
+				<esri:Extent xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25">
+					<esri:SpatialReference wkid="102113"/>
+				</esri:Extent>
+			</esri:extent>
+			
+			<esri:ArcGISTiledMapServiceLayer url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+			<esri:GraphicsLayer id="myGraphicsLayer"/>
+		</esri:Map>
+		<mx:DataGrid width="100%" height="13%" dataProvider="{findTaskCo.executeLastResult}">
+			<mx:columns>
+				<mx:DataGridColumn width="70"
+					dataField="layerId"
+					headerText="Layer ID"/>
+				<mx:DataGridColumn dataField="layerName" headerText="Layer Name"/>
+				<mx:DataGridColumn dataField="foundFieldName" headerText="Found Field Name"/>
+				<mx:DataGridColumn dataField="value" headerText="Found Field Value"/>
+			</mx:columns>
+		</mx:DataGrid>
+		
+		<mx:DataGrid width="100%" height="13%" dataProvider="{findTaskBr.executeLastResult}">
+			<mx:columns>
+				<mx:DataGridColumn width="70"
+					dataField="layerId"
+					headerText="Layer ID"/>
+				<mx:DataGridColumn dataField="layerName" headerText="Layer Name"/>
+				<mx:DataGridColumn dataField="foundFieldName" headerText="Found Field Name"/>
+				<mx:DataGridColumn dataField="value" headerText="Found Field Value"/>
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:VDividedBox>
+	
+</s:Application>

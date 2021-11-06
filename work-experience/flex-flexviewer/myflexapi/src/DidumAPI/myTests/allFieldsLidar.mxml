@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   pageTitle="Identify Lidar"> 
+	<fx:Script>
+		<![CDATA[			
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint; //add
+			import com.esri.ags.symbols.InfoSymbol;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			
+			import mx.controls.Alert;
+			import mx.rpc.AsyncResponder;
+			
+			private var lastClick:MapPoint; //add
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			
+			private function mapIdentify(event:MapMouseEvent):void {
+				clickGraphicsLayer.clear();
+				
+				var identifyParams:IdentifyParameters = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = event.mapPoint;
+				identifyParams.mapExtent = myMap.extent;
+				identifyParams.width = myMap.width;
+				identifyParams.height = myMap.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = myMap.spatialReference;
+				//identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
+				
+				lastClick = event.mapPoint;
+				var clickGraphic:Graphic = new Graphic(lastClick, clickPtSym);
+				clickGraphicsLayer.add(clickGraphic);
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, clickGraphic));
+			}
+		
+			private function myResultFunction(results:Array, clickGraphic:Graphic=null):void {
+				if(results && results.length > 0){					
+					for(var i:int=0; i<results.length; i++){
+						var result:IdentifyResult = results[i];
+						var resultGraphic:Graphic = result.feature;
+						
+						if(resultGraphic.geometry && resultGraphic.geometry.type == Geometry.MAPPOINT){
+							resultGraphic.symbol = smsIdentify;
+						}
+						lastIdentifyResultGraphic = resultGraphic;
+						
+						// update clickGraphic (from mouse click to returned feature)
+						clickGraphic.symbol = new InfoSymbol(); // use default renderer
+						clickGraphic.attributes = resultGraphic.attributes;
+					}
+				}
+			}
+			private function onMapLoad():void {
+				Alert.show('Maps loaded');
+			}
+			private function myFaultFunction(error:Object, clickGraphic:Graphic=null):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			private function initApp():void {
+				//console message deployed in debug mode
+				trace("Creation completed for map with " + myMap.extent.toString());
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Symbol for Identify Result as Polygon -->
+		<esri:SimpleFillSymbol id="sfsIdentify"/>
+		<!-- Symbol for Identify Result as Polyline -->
+		<esri:SimpleLineSymbol id="slsIdentify" width="2" alpha="1" color="0x00FF00" style="solid" />
+		<!-- Symbol for Identify Result as Point -->
+		<esri:SimpleMarkerSymbol id="smsIdentify" color="0x00FF00" size="15" style="diamond" />
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="clickPtSym" color="0xFF0000" size="12" style="x" />
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" 
+			url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer"/>
+		<!--Basemap iExtent-->
+		<esri:Extent id="myExtB" xmin="-10884964.57" ymin="4660003.62" xmax="-9907264.87" ymax="5649404.52" 
+			spatialReference="{new SpatialReference(102113)}" />
+	</fx:Declarations>
+
+	<!--The left panel -->
+	<s:Panel id="leftPanel" height="100%" color="0x000000" title="Left Panel" borderVisible="false"
+		 backgroundColor="0xefefef" direction="ltr" left="5" right="5" bottom="5" top="2.5">
+		<!--
+		<s:VGroup id="myButtons" color="0x000000" left="5" right="0" top="5" bottom="0" height="10%">
+			<s:Button id="slsb" label="sls-Button" enabled="true" click="mySLSFntn(resultGraphic)"/>
+			<s:Button id="sfsb" label="sfs-Button" enabled="true" click="mySFSFntn(resultGraphic)"/>
+		</s:VGroup>
+		-->
+	</s:Panel>
+	<!--The center panel -->
+	<s:Panel id="centerPanel" height="100%" color="0x000000" title="Center Panel" borderVisible="false"
+		backgroundColor="0xFFFFFF" direction="ltr" left="300" right="0" bottom="5" top="2.5" fontWeight="bold">
+		
+		<s:RichText top="5" left="5" right="5" color="0x00000">
+			Click on the map graphic to see identified features.
+		</s:RichText>
+		
+		<esri:Map id="myMap" extent="{myExtB.expand(1)}" load="onMapLoad()" creationComplete="initApp()" 
+			mapClick="mapIdentify(event)" openHandCursorVisible="false" logoVisible="false"
+			left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+			<esri:ArcGISTiledMapServiceLayer 
+				url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer" visible="true" />
+			<esri:ArcGISDynamicMapServiceLayer 
+				url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer" visible="true" />
+			<esri:ArcGISDynamicMapServiceLayer 
+				url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap_Overlay/MapServer" visible="true" />
+			<esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/>
+			<esri:GraphicsLayer id="clickGraphicsLayer"/>
+		</esri:Map>
+	</s:Panel>
+	
+</s:Application>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Didum: Test Page" creationComplete="myTestPage()">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.controls.Alert;
+			
+			private function myTestPage():void{
+				var myVar:String = "Of course, you'd need to replace the \nurl to a more specific one. \n<b><a href='http://dsc.discovery.com/'>Hello World of Discovery!</a></b>";
+				myTxtAr.htmlText = myVar;
+				Alert.show("Hello World works!");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!-- special tags -->
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!--<s:TextArea id="myTxtAr" editable="false" width="150" height="100" left="500" top="10"/>-->
+	<mx:TextArea id="myTxtAr" editable="false" alpha="0.90" borderColor="0x00000" color="0x44ccff" width="250" height="80" left="500" top="10"/>
+	
+</s:Application>

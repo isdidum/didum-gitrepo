@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="Turning individual layers on/off for an dynamic ArcGIS map service">
+    <!--
+         @@includeFiles com/esri/ags/samples/LayerTOC.mxml (mxml-component),
+						com/esri/ags/samples/LayerVizRenderer.mxml (mxml-component)
+
+         Problem:
+         Allow end-users to easily turn on/off layers for any dynamic service.
+
+         Solution:
+         By default, the visible layers (as defined in the service) are used.
+         In this example, a datagrid (LayerTOC) with checkboxes for every layer in
+         the current service is displayed.  The datagrid itemrenderer (LayerVizRenderer)
+         will update the map service as users selects/clears checkboxes.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center" paddingBottom="20" paddingLeft="20" 
+			paddingRight="20" paddingTop="20"/>
+    </s:layout>
+
+    <s:DropDownList id="myURL" width="280" horizontalCenter="0" requireSelection="true" selectedIndex="0">
+        <s:ArrayList>
+            <fx:String>Demographics/ESRI_Census_USA</fx:String>
+            <fx:String>Demographics/ESRI_Population_World</fx:String>
+            <fx:String>Specialty/ESRI_StateCityHighway_USA</fx:String>
+            <fx:String>Specialty/ESRI_StatesCitiesRivers_USA</fx:String>
+            <fx:String>Specialty/SuperTuesdaySample</fx:String>
+            <fx:String>Louisville/LOJIC_LandRecords_Louisville</fx:String>
+            <fx:String>Louisville/LOJIC_PublicSafety_Louisville</fx:String>
+        </s:ArrayList>
+    </s:DropDownList>
+
+    <mx:HDividedBox width="100%" height="100%">
+        <esri:Map openHandCursorVisible="false" logoVisible="false">
+            <esri:ArcGISDynamicMapServiceLayer id="myDynamicService" load="myDynamicService.defaultVisibleLayers()"
+                                               url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/{myURL.selectedItem}/MapServer"/>
+        </esri:Map>
+        <samples:LayerTOC width="210" height="100%" mapLayer="{myDynamicService}"/>
+    </mx:HDividedBox>
+
+</s:Application>

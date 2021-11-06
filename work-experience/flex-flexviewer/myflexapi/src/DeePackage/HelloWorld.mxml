@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	width="400" height="300" creationComplete="initApp()"
+	pageTitle="Didum-Class">
+	<fx:Script>
+		<![CDATA[
+			//import mx.controls.Alert;
+			
+			private var myGreeter:Greeter = new Greeter();
+			
+			public function initApp():void {
+				// the helloWorld() in package
+				var myTxt:String = "This example demonstrates how to \n";
+				myTxt += "call an external file in flex.";
+				mainText.htmlText = myTxt + "\n\n Didum says \n\"<font face='Aerial' size='+3'><b>" 
+					+ myGreeter.sayHello() + "</b></font>\""; 
+				
+				// the forLoop() in package
+				mainText2.text = myGreeter.forLoop();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--
+	<s:TextArea id="mainText" width="400" alpha="0.95" color="0x0066FF" top="10" borderColor="0xDDDDDD"/>
+	-->
+	
+	<mx:TextArea id="mainText" width="250" height="90" alpha="0.95" 
+		color="0x0066FF" top="10" borderColor="0xDDDDDD" editable="false"/>
+	
+	<mx:TextArea id="mainText2" width="250" height="90" alpha="0.95" 
+		color="0x0066FF" top="110" borderColor="0xDDDDDD" editable="false"/>
+
+</s:Application>

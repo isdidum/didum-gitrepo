@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Enhanced Identitfy Imagery"> 
+	
+	<!-- Author: Didum Abraham
+	Credit To: ERSI 
+	Purpose: This program allows a user to click on the map graphic to identify features, using the
+	identifyTask. It produces its outputs in a TextArea and allows the features returned to
+	be clickable as hyperlinks.
+	Modified : June 8, 2011
+	-->
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.symbols.InfoSymbol;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			import com.esri.ags.tools.NavigationTool;
+			
+			import flash.net.navigateToURL;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.advancedDataGridClasses.AdvancedDataGridColumn;
+			import mx.events.ListEvent;
+			import mx.logging.LogEventLevel;
+			import mx.rpc.AsyncResponder;
+			
+			import spark.events.IndexChangeEvent;
+			
+			
+			private var lastClick:MapPoint;
+			[Bindable]private var myFeatures:ArrayCollection;
+			[Bindable]private var getTitle:String = "Available Imagery : 0";
+			[Bindable]private var lastIdentifyResultGraphic:Graphic;
+			//getTxt was "Ctrl/Shift for multiple selection" iff(allowMultipleSelection=true) for myListCols
+			[Bindable]private var getTxt:String = "";
+			[Bindable]private var myListColsLabels:Array = [{label:"Count"}, 
+				{label:"Rest Services"}, {label:"View Path"}, {label:"Service Name"}, {label:"Add"}];
+			
+			private function mapIdentify(event:MapMouseEvent):void {
+				myGraphicsLayer.clear();
+				
+				var identifyParams:IdentifyParameters = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = event.mapPoint;
+				identifyParams.mapExtent = myMap.extent;
+				identifyParams.width = myMap.width;
+				identifyParams.height = myMap.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = myMap.spatialReference;
+				
+				lastClick = event.mapPoint;
+				var clickGraphic:Graphic = new Graphic(lastClick, clickPtSym);
+				myGraphicsLayer.add(clickGraphic);
+				identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, clickGraphic));
+			}
+			
+			private function myResultFunction(results:Array, clickGraphic:Graphic=null):void {
+				if(results && results.length > 0){
+					var result:IdentifyResult = results[0];
+					var resultGraphic:Graphic = result.feature;
+					
+					var mapPoint:MapPoint = MapPoint(clickGraphic.geometry);
+					var myPoint:Point = myMap.toScreen(mapPoint);
+					var myLabel:String, infoWinText:String;
+					
+					switch(resultGraphic.geometry.type) {
+						case Geometry.POLYGON: {						
+							/* This allows the population of datagrid */					
+							myFeatures = new ArrayCollection();
+							for(var k:int = 0; k < results.length; k++){	
+								var cntr2:Number = (k+1);
+															
+								myFeatures.addItem(
+									{
+										COUNT: cntr2,
+										Service: results[k].feature.attributes.Service,					
+										ImageryPat: results[k].feature.attributes.ImageryPat,
+										ServiceNam: results[k].feature.attributes.ServiceNam,
+										ViewImage: " ",
+										View: " "
+									}
+								);
+								myGrid.visible = true;
+								getTitle = "Available Imagery : " + results.length;
+							}
+							break;
+						}
+					}
+					lastIdentifyResultGraphic = resultGraphic;					
+				}
+			}
+			
+			private function myFaultFunction(error:Object, clickGraphic:Graphic=null):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			
+			private function initApp():void {
+				//console message deployed in debug mode
+				trace("Creation completed for map with " + myMap.extent.toString());
+			}
+			
+			private function onItemClick(event:ListEvent):void {
+				var myListColsCntr:int = myListCols.selectedItems.length; //changes with change in event
+				var getName:Object = myListCols.selectedItem;
+				var getString:String = getName.label;
+				
+				var getSvc:String = myGrid.selectedItem.Service;
+				var getImg:String = myGrid.selectedItem.ImageryPat;
+				switch(event.columnIndex){
+					case 0: {
+						if(event.columnIndex === 0 && myListColsCntr === 4 && getString === "Rest Services"){
+							navigateToURL(new URLRequest(getSvc), '_blank');
+							Alert.show("Column0 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);						
+						} else if(event.columnIndex === 0 && myListColsCntr === 1 && getString === "Rest Services"){ 
+							navigateToURL(new URLRequest(getSvc), '_blank');
+							Alert.show("Column20 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						}else if(event.columnIndex === 0 && myListColsCntr === 1 && getString === "View Path"){
+							navigateToURL(new URLRequest(getImg), '_blank');
+							Alert.show("Column23 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else if(event.columnIndex === 0 && myListColsCntr === 1 && getString  === "Add"){
+							myImageTile.url = event.itemRenderer.data.Service;						
+							myGraphicsLayer.clear();
+							
+							myMap.addLayer(myImageTile, 0); //-1=place img on top
+							myMap.reorderLayer(myImageTile.url, 0); //1=places img on top, 0=places img underneath
+							Alert.show("Column24 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else {
+							"";
+							Alert.show("Column0_1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);	
+						}
+						break;
+					}
+					case 1: {
+						if(event.columnIndex === 1 && myListColsCntr === 4 && getString === "Rest Services"){
+							navigateToURL(new URLRequest(getImg), '_blank');
+							Alert.show("Column1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else if(event.columnIndex === 1 && myListColsCntr === 5 && getString === "Count"){
+							navigateToURL(new URLRequest(getSvc), '_blank');
+							Alert.show("Column1_1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else {	
+							"";
+							Alert.show("Column1_2 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						}
+						break;
+					}
+					case 2: {
+						if(event.columnIndex === 2 && myListColsCntr === 4 && getString === "Rest Services"){
+							"";
+							Alert.show("Column2 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else if(event.columnIndex === 2 && myListColsCntr === 5 && getString === "Count"){
+							navigateToURL(new URLRequest(getImg), '_blank');
+							Alert.show("Column2_1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else {
+							"";
+							Alert.show("Column2_2 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						}
+						break;
+					}
+					case 3: {
+						if(event.columnIndex === 3 && myListColsCntr === 4 && getString === "Rest Services"){
+							myImageTile.url = event.itemRenderer.data.Service;						
+							myGraphicsLayer.clear();
+							
+							myMap.addLayer(myImageTile, 0); //-1=place img on top
+							myMap.reorderLayer(myImageTile.url, 0); //1=places img on top, 0=places img underneath
+							Alert.show("Column3 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						} else {
+							"";
+							Alert.show("Column3_1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+						}
+						break;
+					}
+					case 4: {
+						if(event.columnIndex === 4 && myListColsCntr === 5 && getString === "Count"){
+							myImageTile.url = event.itemRenderer.data.Service;						
+							myGraphicsLayer.clear();
+							
+							myMap.addLayer(myImageTile, 0); //-1=place img on top
+							myMap.reorderLayer(myImageTile.url, 0); //1=places img on top, 0=places img underneath
+							Alert.show("Column4 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+							break;
+						} else {
+							"";
+							Alert.show("Column4_1 = (" + event.rowIndex + "," + event.columnIndex 
+								+ ")--ListCC="+myListColsCntr + "--myListCols = " + getString);
+							break;
+						}		
+					}
+					default : {
+						myGraphicsLayer.clear();
+						break;
+					}
+				}
+			}
+						
+			// for navigation tool	
+			private function tbb_changeHandler(event:IndexChangeEvent):void
+			{
+				switch (tbb.selectedItem)
+				{
+					case "Zoom In": {
+						navTool.activate(NavigationTool.ZOOM_IN);
+						break;
+					}
+					case "Zoom Out": {
+						navTool.activate(NavigationTool.ZOOM_OUT);
+						break;
+					}
+					case "Pan": {
+						navTool.activate(NavigationTool.PAN);
+						break;
+					}
+					default: {
+						navTool.deactivate();
+						break;
+					}
+				}
+			}
+			
+			private function hideShowMyGridCols():void {
+				var myAdvGridCol:Array = myGrid.columns;
+				var myMxListCols:Array =  myListCols.selectedItems; 
+				var myAdvDGClassCol:AdvancedDataGridColumn;
+				var myGridHeaderTxtLbl:String; 
+				var myListColsLbls:String;
+				var colsVisible:Boolean
+				for (var i:int=0;i<myAdvGridCol.length;i++)  {
+					colsVisible = false
+					myAdvDGClassCol = myAdvGridCol[i];
+					myGridHeaderTxtLbl = myAdvDGClassCol.headerText; 
+					for (var j : int = 0; j < myMxListCols.length; j++)  {
+						if(myMxListCols[j] == null) continue;
+						myListColsLbls = myMxListCols[j].label;
+						if (myListColsLbls === myGridHeaderTxtLbl)  {
+							colsVisible = true;
+							break;
+						}			  
+					}       
+					if (colsVisible) {
+						myAdvDGClassCol.visible = true;
+					} else  {
+						myAdvDGClassCol.visible = false;
+					}
+				}
+			}
+			
+			private function showAll():void {
+				myListCols.selectedIndices = [0,1,2,3,4];
+				hideShowMyGridCols();
+			}
+			
+			private function hideAll():void {
+				myListCols.selectedIndices = [];
+				hideShowMyGridCols();
+			}
+			
+			private function setDefault():void {
+				myListCols.selectedIndices = [1,2,3,4];
+				hideShowMyGridCols();
+			}
+						
+			public var cntr:int=0;
+			private function handleDivderRelease():void {
+				if(cntr == 0) {
+					myControlBox.width = 0;
+				} else if(cntr == 1) {
+					myControlBox.width = 120;
+				}
+				cntr = (cntr + 1) % 2;
+			}
+			
+			private function myLyrDelete():void {
+				myMap.removeLayer(myImageTile);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace esri "http://www.esri.com/2008/ags";
+		@namespace components "com.esri.ags.components.*";
+		
+		components|InfoWindow {
+			content-background-alpha : 1.0; 
+			background-color : #FFFF00; /* =yellow*/
+			background-alpha : 0.8;
+			color : black;
+			border-style : solid;
+		}
+	</fx:Style>
+	
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="clickPtSym" color="0x00FF00" size="12" style="square"/>
+		
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" disableClientCaching="true" 
+			url="http://geonexus/ArcGIS/rest/services/AerialImagery/GeoNexusAerialImageryDB/MapServer"/>
+		
+		<!-- for navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>
+		
+		<!-- The output from TraceTarget is available when debugging this sample in Flash Builder -->
+		<mx:TraceTarget includeCategory="true" includeLevel="true" includeTime="true" 
+			level="{LogEventLevel.DEBUG}"/>		
+	</fx:Declarations>
+	<!--main panel-->
+	<s:Panel id="mainPanel" title="Aerial Imagery Web Map Application" height="100%" width="100%" color="0x000000" borderVisible="true" 
+		backgroundColor="0xFFFFFF" direction="ltr" left="0" right="0" bottom="0" top="0">
+		
+		<!-- For Navigation Tool-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="0" horizontalAlign="center" paddingBottom="3"
+				paddingLeft="10" paddingRight="10" paddingTop="3"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<s:ButtonBar id="tbb" change="tbb_changeHandler(event)">
+				<s:ArrayList>
+					<fx:String>Zoom In</fx:String>
+					<fx:String>Zoom Out</fx:String>
+					<fx:String>Pan</fx:String>
+				</s:ArrayList>
+			</s:ButtonBar>
+			<s:HGroup gap="0">
+				<s:Button click="navTool.zoomToPrevExtent()"
+					enabled="{!navTool.isFirstExtent}" label="Previous Extent"/>
+				<s:Button click="navTool.zoomToNextExtent()" enabled="{!navTool.isLastExtent}"
+					label="Next Extent"/>
+				<s:Button click="navTool.zoomToFullExtent()" label="Full Extent"/>
+			</s:HGroup>
+		</s:controlBarContent>
+		
+		<mx:HDividedBox width="100%" height="100%">			
+			<esri:Map id="myMap" level="7" mapClick="mapIdentify(event)" logoVisible="false"
+				extent="{new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113))}" 
+				openHandCursorVisible="false" left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+				<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer" alpha="0.45"/> 	
+				<esri:ArcGISImageServiceLayer id="myImageTile" alpha="1.0"/>
+				<esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/> 
+				<esri:GraphicsLayer id="myGraphicsLayer"/>
+			</esri:Map>
+			
+			
+			<mx:Panel id="bPanel" title="{getTitle}" width="100%" height="350" color="0x999999">
+				
+				<mx:HDividedBox height="100%" width="100%" dividerRelease="handleDivderRelease();">
+					<mx:VBox id="myControlBox" width="125" height="100%" maxWidth="120" 
+						verticalGap="1" horizontalScrollPolicy="auto" left="2">
+						<mx:Label text="Selected columns" fontWeight="bold" />
+						<mx:List id="myListCols" width="120" height="100%" dataProvider="{myListColsLabels}"
+							labelField="label" borderColor="#000000"
+							allowMultipleSelection="false" click="hideShowMyGridCols();"
+							selectedIndices="[1,2,3,4]"/>
+						<mx:TextArea wordWrap="true" selectable="false" editable="false" borderStyle="none"
+							text="{getTxt}" width="120" height="70"/>
+						<mx:Spacer height="5"/>
+						<mx:Button label="Show all" width="120" click="showAll();"/>
+						<mx:Button label="Default"  width="120" click="setDefault();"/>
+						<mx:Button label="Hide all" width="120" click="hideAll();"/>
+						<mx:Button label="Remove Image"  width="120" click="myLyrDelete();"/>
+					</mx:VBox>
+					
+					<mx:HBox width="100%" height="100%">
+						<mx:AdvancedDataGrid id="myGrid" width="100%" height="100%" visible="false" color="0x006699"
+							editable="false" itemClick="onItemClick(event);" dataProvider="{myFeatures}" 
+							selectedIndex="0" selectable="true">			
+							<mx:columns>
+								<mx:AdvancedDataGridColumn width="10" dataField="COUNT" headerText="Count" visible="false"/>
+								<mx:AdvancedDataGridColumn width="90" dataField="Service" headerText="Rest Services" visible="true"/>
+								<mx:AdvancedDataGridColumn width="80" dataField="ImageryPat" headerText="View Path" visible="true"/>
+								<mx:AdvancedDataGridColumn width="45" dataField="ServiceNam" headerText="Service Name" visible="true"/>
+								<mx:AdvancedDataGridColumn width="15" dataField="ViewImage" headerText="Add" visible="true">
+									<mx:itemRenderer>
+										<fx:Component>
+											<mx:RadioButton fontWeight="bold" label=" " labelPlacement="right" paddingLeft="5"
+												selected="{(data.ViewImage === 'false')?true:false}"
+												click="{data.ViewImage = (data.ViewImage !== 'false')?'true':'false';}" />
+										</fx:Component>
+									</mx:itemRenderer>
+								</mx:AdvancedDataGridColumn>
+							</mx:columns>
+						</mx:AdvancedDataGrid>
+						<!--for RadioButton http://blog.flexexamples.com/2008/01/27/using-a-checkbox-control-as-a-list-item-renderer-in-flex/-->
+					</mx:HBox>
+				</mx:HDividedBox>	
+			</mx:Panel>
+			
+		</mx:HDividedBox>
+		
+	</s:Panel>
+</s:Application>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	close="close();">
+	
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout> 
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			private function close():void {	
+				PopUpManager.removePopUp(this);
+			} 
+			
+			private function save():void {
+				PopUpManager.removePopUp(this);
+			}
+		]]>
+	</fx:Script> 
+	
+	<mx:Form>	
+		<mx:FormItem label="First Name:">
+			<s:TextInput id="firstname" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Last Name:">
+			<s:TextInput id="lastname" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Email:">
+			<s:TextInput id="email" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Age:">	
+			<s:TextInput id="age" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Contect Number:">
+			<s:TextInput id="contect" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Address:">
+			<s:TextArea id="address" width="100%"/>
+		</mx:FormItem> 
+		
+		<mx:FormItem label="State:">
+			<s:TextInput id="state" width="100%"/>
+		</mx:FormItem>
+		
+		<mx:FormItem label="Country:">
+			<s:TextInput id="country" width="100%"/>
+		</mx:FormItem> 
+		
+	</mx:Form>
+	
+	<s:HGroup> 
+		
+		<s:Button label="Save" click="save();" /> 
+		<s:Button label="Close without save" click="close();"/> 
+	</s:HGroup> 
+	
+</s:TitleWindow>

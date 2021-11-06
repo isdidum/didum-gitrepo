@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	/////////////////////////////////////////////////////////////////
+	// Developed by Abraham, Didum:didum.abraham@iowa.gov 
+	// Version 0.1 - Independent of any Flexviewer versions
+	// Creation Date - June 22, 2011
+	//////////////////////////////////////////////////////////////////
+-->
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:comp="comp.*" pageTitle="ArcGIS for Flex">
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.SpatialReference;
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<esri:Map id="map" level="7" logoVisible="false"
+		extent="{new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113))}" 
+		openHandCursorVisible="false" left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+		<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer" alpha="1"/> 
+	</esri:Map>
+
+	<comp:WindowDeployment myMap="{map}"/>
+</s:Application>

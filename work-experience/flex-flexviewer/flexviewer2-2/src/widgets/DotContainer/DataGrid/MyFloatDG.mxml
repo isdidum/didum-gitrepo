@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	layout="absolute" width="605"  
+	showCloseButton="true" 
+	title="Results"
+	close="closeMe()" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.viewer.AppEvent;
+			import com.esri.viewer.BaseWidget;
+			import com.esri.viewer.IBaseWidget;
+			import com.esri.viewer.ViewerContainer;
+			
+			import flash.events.Event;
+			
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			import widgets.DotContainer.DataGrid.MySearchWidget;
+			
+			
+			private var graphicHighLight:Graphic;	//was private kw
+			private var _graLyr:GraphicsLayer;
+			private var _bWdiget:BaseWidget;
+			private var _data:Object;
+			private var _zoomScale:Number = 5000;
+			private var _resultsGrid:DataGrid;
+			private var map:Map;
+						
+			
+			//didum (4-22-2011)
+			public function set setMap(value:Map):void {
+				map = value;
+			}
+			
+			//didum (3-29-2011)
+			public function set setGraphicslayer(value:GraphicsLayer):void {
+				_graLyr = value;
+			}
+			
+			public function set setdProvider(value:Object):void {
+				_data = value;
+				resultsGrid.dataProvider = _data;
+			}
+			
+			//didum (3-11-2011)
+			public function set setLength(myValue:Number):void {
+				bPanel.title = "Feature : " + myValue;
+				//set keyword allows getLength() to be seen in MySearchWidget.mxml
+			}
+			
+			//didum (4-21-2011)
+			public function set setZoomScale(value:Number):void {
+				_zoomScale = value;
+			}
+			
+			private function closeMe():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			//didum (3-29-2011)-L.366
+			public function findGraphicByAttributes(attributes:Object):Graphic {
+				for each(var graphic:Graphic in _graLyr.graphicProvider) {
+					if(graphic.attributes === attributes) {
+						map.extent = graphic.geometry.extent;
+						return graphic;
+					}
+				}
+				return null;
+			}
+			
+			//didum (3-29-2011)-L.328
+			private function onItemRollOver(event:ListEvent):void {
+				graphicHighLight = findGraphicByAttributes(event.itemRenderer.data);
+			}
+			
+			//didum (3-29-2011)-L.338
+			private function highLightSel(event:Event):void {
+				if(resultsGrid.selectedItem) {
+					graphicHighLight = findGraphicByAttributes(resultsGrid.selectedItem);
+				}
+			}
+			
+			//didum (3-29-2011)-L.348
+			private function unhighLightSel(event:Event):void {
+				if(resultsGrid.selectedItem) {
+					graphicHighLight = findGraphicByAttributes(resultsGrid.selectedItem);
+				}
+			}
+			
+			//didum (3-30-2011)-L.357
+			private function onItemRollOut(event:ListEvent):void {
+				graphicHighLight = findGraphicByAttributes(event.itemRenderer.data);
+			}
+
+			//didum (3-29-2011)-L.379
+			private function clickRow(event:ListEvent):void {
+				if(event.itemRenderer.data)
+					graphicHighLight = findGraphicByAttributes(event.itemRenderer.data);
+				Alert.show("Didum1 (" + event.rowIndex + "," + event.columnIndex + ")")
+				//message issues here tobe continued...
+			}
+			
+			//didum (4-22-2011)-L.313
+			private function init():void {
+				_resultsGrid = resultsGrid;
+			}
+			
+			//didum (4-22-2011)-L.318
+			public function get getDataGrid():DataGrid {
+				return _resultsGrid;
+			}
+		]]>
+	</fx:Script>
+	
+	<!--Didum addition-->
+	<mx:Panel id="bPanel" color="0x000000" title="Features : 0" width="100%" height="320">	
+		<mx:DataGrid id="resultsGrid" itemRollOver="onItemRollOver(event)"
+			itemRollOut="onItemRollOut(event)" itemClick="clickRow(event)"
+			rollOut="highLightSel(event)" rollOver="unhighLightSel(event)" 
+			horizontalScrollPolicy="auto" variableRowHeight="true">
+        	<mx:columns>
+            	<mx:DataGridColumn width="100" wordWrap="true" headerText="ADDRESS" dataField="ADDRESS1"/>
+            	<mx:DataGridColumn width="100" wordWrap="true" headerText="BLDG TYPE" dataField="BUILDING_TYPE"/>
+            	<mx:DataGridColumn width="73" headerText="COST-CTR" dataField="COST_CENTER"/>
+				<mx:DataGridColumn width="43" headerText="YEAR" dataField="YEAR_BUILT"/>
+            	<mx:DataGridColumn width="65" headerText="PHONE" dataField="PHONE_NUMBER"/>
+				<mx:DataGridColumn width="60" headerText="FTAGE^2" dataField="SQUARE_FOOTAGE"/>
+				<mx:DataGridColumn width="43" headerText="UKEY" dataField="UKEY"/>
+				<mx:DataGridColumn width="75" headerText="INVENTORY" dataField="INVENTORY_NUMBER"/>
+        	</mx:columns>
+    	</mx:DataGrid>
+	</mx:Panel>
+</mx:TitleWindow>

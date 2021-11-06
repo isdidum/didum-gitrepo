@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	creationComplete="showFloatWindow();">
+	<!--
+		Resizable TitleWindow in Flex4
+		http://flexponential.com/2010/01/10/resizable-titlewindow-in-flex-4/
+	-->
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Map;
+			
+			import comp.FloatingWindow;
+			
+			import mx.effects.Move;
+			
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+						
+			public var myMap:Map;
+			public var myfloatWin : FloatingWindow; //call to component (.mxml)
+			protected function showFloatWindow():void {				
+				var move:Move = new Move();
+				//initial position of widget
+				move.xTo = 50; move.yTo = 630;
+				
+				if(myfloatWin == null) {
+					// Since reuse of a popup window is a priority, use createPopUp() 
+					// and store the returned object in a variable for later use.
+					myfloatWin = FloatingWindow(PopUpManager.createPopUp(myMap, FloatingWindow, false) as FloatingWindow);
+					// listen for closeEvent if button is enabled
+					myfloatWin.addEventListener(CloseEvent.CLOSE, closeFW);
+					// map setter is need to have access to map
+					myfloatWin.setMap = myMap;
+					PopUpManager.centerPopUp(myfloatWin);
+					move.play([myfloatWin]);
+				}
+			}
+			
+			protected function closeFW(event:CloseEvent):void {					
+				myfloatWin.visible = false;
+				PopUpManager.removePopUp(myfloatWin);
+				PopUpManager.removePopUp(FloatingWindow(event.target));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+</s:Group>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	layout="vertical" width="200" height="130"
+	title="My Test Float Widget" showCloseButton="true"
+	cornerRadius="5" creationComplete="myInit(event);"
+	borderVisible="false" icon="@Embed(source='assets/bluestar16.png')"> 
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.layers.GraphicsLayer;
+			
+			import comp.FloatingWindow;
+			import mx.events.FlexEvent;
+			
+			//[Embed(source="assets/bluestar16.png")]
+			//[Bindable]public var blueStar16:Class;
+			
+			public var myMap:Map;
+			private var myGraphicsLayer:GraphicsLayer = new GraphicsLayer();
+			[Bindable]private var getString:String = "";
+			
+			
+			public function set setMap(_value:Map):void{
+				/**
+				 * Passes value of map from FloatingWindow.mxml to FloatingWindow in DidumLibrary.mxml
+				 */
+				myMap = _value;
+			}
+			
+			protected function myInit(event:FlexEvent):void {
+				myMap.useHandCursor = false; 
+				this.useHandCursor = false;
+				myMap.openHandCursorVisible = false
+				myMap.addLayer(myGraphicsLayer,-1);
+				myMap.addEventListener(MapMouseEvent.MAP_CLICK, setMapPoint);
+			}
+			
+			private function setMapPoint(evt:MapMouseEvent):void {
+				myGraphicsLayer.clear();
+				myGraphicsLayer.add(new Graphic(evt.mapPoint, sms));
+				
+				getString = "X-Coor = " + evt.mapPoint.x.toFixed(3) + "\nY-Coor = " + evt.mapPoint.y.toFixed(3);
+				myTxtLabel.text = getString;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="circle"/>
+	</fx:Declarations>
+	
+	<mx:Label text="Didum's First Widget" color="#000000" fontWeight="bold"/>
+	<mx:Text id="myTxtLabel" width="100%" height="100%" textAlign="center"
+		fontWeight="normal"/>
+	
+</mx:TitleWindow>

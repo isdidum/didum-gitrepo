@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx" 
+	xmlns:s="library://ns.adobe.com/flex/spark">
+	<!--main application-->
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;
+			
+			private function createTitleWindow():void {
+				//http://help.adobe.com/en_US/flex/using/WS6c678f7b363d5da52e8f1ca1124a0430dcf-8000.html
+				var myForm:TitleWindow = PopUpManager.createPopUp(this, 
+					componentMXML, true) as TitleWindow;
+				myForm.title = "Personal Information Window";
+				PopUpManager.centerPopUp(myForm);
+			}
+			
+		]]>
+		
+	</fx:Script> 
+	
+	<s:Panel title="my Information" width="110" height="60" left="20" top="5">
+		
+		<s:Button label="Open Win" click="createTitleWindow();"/>
+	</s:Panel> 
+	
+</s:Application>
+
+

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" 
+	backgroundColor="#F8F8F8">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.core.UIComponent;
+			
+			private var _window : UIComponent;
+			private var _originalPosition : Point;
+			private var _mouseDownPosition : Point;
+			
+			private function onTitleBarMouseDown( event : MouseEvent ) : void
+			{
+				// 1. set _window
+				_window = UIComponent( UIComponent( event.currentTarget ).parent );
+				
+				// 2. add mouse move and mouse up event listeners
+				this.systemManager.addEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.addEventListener( MouseEvent.MOUSE_UP, doCommitMove, true );									
+				
+				// 3. save offsets
+				_originalPosition = new Point( _window.x, _window.y );
+				_mouseDownPosition = new Point( event.stageX, event.stageY );
+			}
+			
+			private function doMoving( event : MouseEvent ) : void
+			{
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();
+				
+				// 2. calculate new position
+				var positionToMove : Point = new Point( _originalPosition.x + ( event.stageX - _mouseDownPosition.x ),
+					_originalPosition.y + ( event.stageY - _mouseDownPosition.y ) );
+				// 3. move window
+				_window.move( positionToMove.x, positionToMove.y );
+			}
+			
+			private function doCommitMove( event : MouseEvent ) : void
+			{
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();	
+				
+				// 2. remove event listeners
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_UP, doCommitMove , true );
+			}
+		]]>
+	</fx:Script>
+	
+	<mx:Canvas
+		x="37" y="31" width="245" height="156"
+		borderColor="#999999" backgroundColor="#FFFFFF" borderStyle="solid">
+		
+		<!-- Title Bar-->
+		<mx:Canvas
+			x="0" y="0" width="100%" height="35"
+			backgroundColor="#B1DAFA"
+			mouseDown="onTitleBarMouseDown( event )">
+			
+			<mx:Label x="10" y="7" text="Title" fontSize="14"/>
+		</mx:Canvas>
+		
+		<!-- Instruction -->
+		<mx:Label x="27" y="73" text="Drag the title bar to move" fontSize="14"/>
+	</mx:Canvas>
+</s:Application>

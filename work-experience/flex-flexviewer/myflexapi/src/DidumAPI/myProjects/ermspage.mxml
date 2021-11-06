@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="ERMS Search Page">
+	<!-- Developed by Didum Abraham
+		Credit To: ERSI
+		Date: December 8, 2010
+		Purpose: This program allows end-users to selecte either a point, polyline, polygon, or extent to draw on
+				map graphic and upon draw completion, deselects draw tools and projects the draw event.
+	-->
+	<fx:Style>
+		@namespace mx "library://ns.adobe.com/flex/mx";  
+		mx|ToolTip
+		{
+			font-size: 14;
+		}
+	</fx:Style>
+	
+	<fx:Script>
+		<![CDATA[
+			/*import com.esri.ags.Graphic;*/
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.events.GeometryServiceEvent;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Polygon;
+			import com.esri.ags.geometry.Polyline;
+			import com.esri.ags.tasks.GeometryService;
+			import com.esri.ags.tasks.supportClasses.BufferParameters;
+			import com.esri.ags.tools.NavigationTool;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			import mx.events.ItemClickEvent;
+			
+			import spark.primitives.Line;
+			
+			private var myGeometry:Geometry;
+			private var bufferParams:BufferParameters = new BufferParameters();
+			
+			private function bufferGeometry():void{
+				var valGeom:Geometry = Geometry(myMap.extent);
+				bufferParams.geometries = [valGeom];
+				bufferParams.distances = [myBufferTxt.text];
+				bufferParams.unit = GeometryService.UNIT_METER;
+				bufferParams.bufferSpatialReference = new SpatialReference(4326);
+				myGeomSvc.addEventListener(GeometryServiceEvent.BUFFER_COMPLETE, BCHandler);
+				myGeomSvc.buffer(bufferParams); 
+				
+				function BCHandler(event:GeometryServiceEvent):void {
+					//draw symbol here...
+					myGeomSvc.removeEventListener(GeometryServiceEvent.BUFFER_COMPLETE, BCHandler);
+				}
+			}
+			
+			protected function tbb_itemClickHandler(event:ItemClickEvent):void
+			{
+				if (tbb.selectedIndex < 0)
+				{
+					// when toggling a tool off, deactivate it
+					myDrawTool.deactivate();
+				}
+				else
+				{
+					switch (event.item.label)
+					{
+						case "MAPPOINT":
+						{
+							tbb.toolTip = "Point";
+							myDrawTool.activate(DrawTool.MAPPOINT);
+							bufferGeometry();
+							break;
+						}
+						case "POLYLINE":
+						{
+							tbb.toolTip = "Polyline";
+							myDrawTool.activate(DrawTool.POLYLINE);
+							bufferGeometry();
+							break;
+						}
+						case "POLYGON":
+						{
+							tbb.toolTip = "Polygon";
+							myDrawTool.activate(DrawTool.POLYGON);
+							bufferGeometry();
+							break;
+						}
+						case "EXTENT":
+						{
+							tbb.toolTip = "Extent";
+							myDrawTool.activate(DrawTool.EXTENT);
+							bufferGeometry();
+							break;
+						}
+					}
+				}
+			}
+			
+			protected function drawTool_drawEndHandler(event:DrawEvent):void
+			{
+				// reset after finished drawing a feature
+				myDrawTool.deactivate();
+				tbb.selectedIndex = -1; //deselects all buttons in the bar
+				tbb.toolTip = null; //deselects toolTip
+				myGeometry = event.graphic.geometry as Geometry;
+				projectNowHandler();
+			}
+			
+			private function projectNowHandler():void {
+				if(myGeometry) {
+					myGeomSvc.project([myGeometry], new SpatialReference(4326));
+				}
+			}
+						
+			protected function onProjectComplete(event:GeometryServiceEvent):void {
+				var setType:String, myGeoType:String; var nodes:Array = new Array();
+				var xArray:Array = new Array(), yArray:Array = new Array();
+				
+				// Note: As of version 2.0, GeometryService returns geometries (instead of graphics)
+				var myPoint:MapPoint = (event.result as Array)[0] as MapPoint;
+				var myLine:Polyline = (event.result as Array)[0] as Polyline;
+				var myPolygon:Polygon = (event.result as Array)[0] as Polygon;
+				var myExt:Extent = (event.result as Array)[0] as Extent;
+				
+				
+				if(myPoint) { 
+					setType = myPoint.type; myGeoType = "POINT";
+					nodes = [[myPoint.x.toFixed(4), myPoint.y.toFixed(4)]];
+				
+					//stores points in array
+					for each (var k:int in nodes) {
+						xArray.push(nodes[k][0]);	 //works for a point
+						yArray.push(nodes[k][1]);
+					}
+			
+				}else if(myLine) { 	
+					setType = myLine.type; myGeoType = "LINE";
+					for each(var i:int in myLine.paths){
+						for each(var j:MapPoint in myLine.paths[i]){
+							//Alert.show(myLine.paths[i][j]);
+							xArray.push(j.x.toFixed(4));
+							yArray.push(j.y.toFixed(4));
+						}
+					}
+					
+				}else if(myPolygon) {
+					setType = myPolygon.type; myGeoType = "POLYGON";				
+						//for (var si:int=0; si<myGon.rings.length; si++){//works as well
+						for each(var si:int in myPolygon.rings){ //works
+							for each(var sj:MapPoint in myPolygon.rings[si]){
+								xArray.push(sj.x.toFixed(4));
+								yArray.push(sj.y.toFixed(4));
+							}
+						}
+				}else if(myExt) {
+					setType = myExt.type; myGeoType = "RECTANGLE";
+					nodes = [[myExt.xmin.toFixed(5), myExt.ymin.toFixed(5)], 
+						[myExt.xmax.toFixed(5), myExt.ymax.toFixed(5)]];
+					
+					xArray = [nodes[0][0], nodes[1][0]];
+					yArray = [nodes[0][1], nodes[1][1]];
+				}
+												
+				var mURL:String = "http://ntliermsportal/CMEGISWeb/GISDoc.aspx?geom=" 
+					+ myGeoType + "&long=" + xArray.join("|") + "&lat=" + yArray.join("|") 
+					+ "&buffer=" + myBufferTxt.text + "&mask=" + spatialRel.selectedItem;
+			
+				//Writes to output textArea to troubleshoot
+				myTxt.visible = false; // was true
+				myTxt.htmlText = "1). Relation = " + spatialRel.selectedItem 
+					+ "<br />2). Buffer = " + myBufferTxt.text
+					+ "<br />3). GeoType = " + myGeoType
+					+ "<br />4). SetType = " + setType
+					+ "<br />5). Nodes = " + nodes 
+					+ "<br />6). xArray = " + xArray
+					+ "<br />7). yArray = " + yArray
+					+ "<br />8). xArJon = " + xArray.join("|")
+					+ "<br />9). yArJon = " + yArray.join("|") 
+					+ "<br />" 
+					+ "<br />10). URL = " + mURL;
+			
+				//navigateToURL(new URLRequest(mURL), '_blank'); //works as well
+				ExternalInterface.call('window.open', mURL, 'emrsPage', 'width=1000,height=600',
+					trace('Initiating Window.Open')); //but this give more flexibility in terms of its attributes
+				//tbb.toolTip = null; //resets toolTips upon call completion of external-interface
+			}
+			
+			private function onFault(info:Object, token:Object = null):void{
+				Alert.show(info.toString());
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!--Geometric Service-->
+		<esri:GeometryService id="myGeomSvc" concurrency="last" fault="onFault(event)" 
+			projectComplete="onProjectComplete(event)" showBusyCursor="true"
+			url="http://geonexus/ArcGIS/rest/services/Geometry/GeometryServer"/>
+		
+		<esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="square"/>
+		
+		<!-- Symbol for all line shapes -->
+		<esri:SimpleLineSymbol id="sls" width="3" color="0x00FF00"/>
+		
+		<!-- Symbol for all polygon shapes -->
+		<esri:SimpleFillSymbol id="sfs" color="0x5B5BFF" style="solid">
+			<esri:outline>
+				<esri:SimpleLineSymbol width="1" color="0x00FF00"/>
+			</esri:outline>
+		</esri:SimpleFillSymbol>
+		
+		<esri:DrawTool id="myDrawTool" drawEnd="drawTool_drawEndHandler(event);" fillSymbol="{sfs}" 
+			graphicsLayer="{myGraphicsLayer}" lineSymbol="{sls}" map="{myMap}" markerSymbol="{sms}"/>
+		
+		<!--navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>
+	</fx:Declarations>
+	
+	<!-- Left Panel -->
+	<s:Panel id="leftPanel" height="100%" color="0x3300FF" title="Map Navigation" 
+		borderVisible="false" backgroundColor="0xefefef" direction="ltr" left="5" 
+		right="5" bottom="5" top="2.5">
+		
+		<!--Buffer Input-->
+		<s:BorderContainer width="25%" height="40" backgroundColor="0x999999" borderVisible="false"
+			left="0" right="0" top="5" color="0x006699">
+			<s:Label text="Buffer [m]" left="10" top="15" bottom="5"/>
+			<s:TextInput id="myBufferTxt" maxWidth="400" text="1000" color="0x000000" left="80" top="10" bottom="10"/>
+		</s:BorderContainer>
+		
+		<!--Relation Options-->
+		<s:BorderContainer width="25%" height="40" backgroundColor="0x999999" borderVisible="false"
+			left="0" right="0" top="60" color="0x006699">
+			<mx:ControlBar>
+				<s:Label text="Interaction" direction="ltr"/>
+				<s:DropDownList id="spatialRel" selectedIndex="0" width="135">
+					<s:dataProvider>
+						<s:ArrayList>
+							<fx:String>ANYINTERACT</fx:String>
+							<fx:String>CONTAINS</fx:String>
+							<fx:String>ON</fx:String>
+							<fx:String>INSIDE</fx:String>
+							<fx:String>COVERS</fx:String>
+							
+							<fx:String>EQUAL</fx:String>
+							<fx:String>OVERLAPBDYDISJOINT</fx:String>
+							<fx:String>OVERLAPBDYINTERSET</fx:String>
+							<fx:String>COVEREDBY</fx:String>
+							<fx:String>TOUCH</fx:String> <!--just added-->
+						</s:ArrayList>
+					</s:dataProvider>
+				</s:DropDownList>
+				<!--<s:Label text="Relation Operator" direction="ltr"/>-->
+			</mx:ControlBar>
+		</s:BorderContainer>
+		
+		<mx:TextArea id="myTxt" width="22%" height="200" top="125" editable="false" visible="false"/>
+		
+		<!--Navigation ToolBar Buttons-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="10" horizontalAlign="left" paddingBottom="7"
+				paddingLeft="65" paddingRight="5" paddingTop="7"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<s:HGroup gap="10" width="30%">
+				<mx:Button click="navTool.zoomToPrevExtent();" toolTip="Previous Extent"
+					disabledIcon="@Embed('assets/images/left.gif')"	
+					downIcon="@Embed('assets/images/left.gif')"
+					enabled="{!navTool.isFirstExtent}"
+					overIcon="@Embed('assets/images/left.gif')" 
+					upIcon="@Embed('assets/images/left.gif')" width="35" height="35"/>
+				<mx:Button click="navTool.zoomToNextExtent();" toolTip="Next Extent"
+					disabledIcon="@Embed('assets/images/right.gif')" 
+					downIcon="@Embed('assets/images/right.gif')"
+					enabled="{!navTool.isLastExtent}"
+					overIcon="@Embed('assets/images/right.gif')"
+					upIcon="@Embed('assets/images/right.gif')" width="35" height="35"/>
+				<mx:Button click="navTool.zoomToFullExtent();" toolTip="Full Extent"
+					downIcon="@Embed('assets/images/web.gif')"
+					overIcon="@Embed('assets/images/web.gif')"
+					upIcon="@Embed('assets/images/web.gif')" width="35" height="35"/>
+				<mx:Button click="{myGraphicsLayer.clear();myTxt.htmlText='';myTxt.alpha=0.3;}" 
+					downIcon="@Embed('assets/images/cancel.gif')" toolTip="Clear Graphic"
+					enabled="true"
+					overIcon="@Embed('assets/images/cancel.gif')"
+					upIcon="@Embed('assets/images/cancel.gif')" width="35" height="35"/>
+			</s:HGroup>
+		</s:controlBarContent>
+	</s:Panel>
+	<!-- myTxt.htmlText = "";}"-->
+	<!-- Center Panel -->
+	<s:Panel id="centerPanel" width="100%" height="100%" color="0x3300FF" 
+		title="ERMS Search Application" borderVisible="true" autoLayout="true"
+		backgroundColor="0xFFFFFF" left="290" right="0" bottom="5" top="2.5">
+		
+		<s:controlBarLayout>
+			<s:HorizontalLayout horizontalAlign="center" paddingTop="5" paddingBottom="5"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<mx:ToggleButtonBar id="tbb" itemClick="tbb_itemClickHandler(event);"
+				labelField="null" selectedIndex="-1" toggleOnClick="true">
+				<fx:Object icon="@Embed(source='assets/i_draw_point.png')" label="MAPPOINT"/>
+				<fx:Object icon="@Embed(source='assets/i_draw_line.png')" label="POLYLINE"/>
+				<fx:Object icon="@Embed(source='assets/i_draw_poly.png')" label="POLYGON"/>
+				<fx:Object icon="@Embed(source='assets/i_draw_rect.png')" label="EXTENT"/>
+			</mx:ToggleButtonBar>
+		</s:controlBarContent>
+		
+		<esri:Map id="myMap" level="7" openHandCursorVisible="false" logoVisible="false" 
+			extent="{new Extent(-10884964.57, 4660003.62, -9907264.87, 5649404.52, new SpatialReference(102113))}">
+			<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+			<esri:GraphicsLayer id="myGraphicsLayer"/>
+		</esri:Map>
+		
+	</s:Panel>	
+</s:Application>

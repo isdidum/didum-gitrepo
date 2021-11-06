@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   pageTitle="Flex Sample Test2"> 
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.geometry.Extent;
+			
+			import com.esri.ags.geometry.MapPoint;
+			import mx.events.FlexEvent;
+			
+			import mx.controls.Alert; //maybe not needed
+			
+		]]>
+	</fx:Script>
+	<!--Getting map extent -->
+	<fx:Declarations>
+	<esri:Extent id="myIniExtent" xmin="-10912055.04" ymin="4773743.78" xmax="-9870065.48" ymax="5536891.07" spatialReference="{new SpatialReference(102113)}"/>
+	</fx:Declarations>
+	<s:Panel height="100%" title="Didum-Flex Practice" width="100%">
+		<esri:Map id="myMap" extent="{myIniExtent.expand(2)}" openHandCursorVisible="false" styleName="myRubberbandStyle" logoVisible="false">
+			<!--
+			ArcGISDynamicMapServiceLayer if(Cache==false), ArcGISTiledMapServiceLayer if(Cache==true), ArcGISImageServiceLayer, DynamicMapServiceLayer
+			HighWay BaseMap was=http://testgeonexus/ArcGIS/rest/services/Highway/highwaydiv_basemapv1.1/MapServer
+			-->
+			<esri:ArcGISTiledMapServiceLayer url="http://testgeonexus/ArcGIS/rest/services/Highway/Highway_Division_Basemap/MapServer"
+					visible="{gID.selectedIndex == 0}"/>
+			<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"
+					visible="{gID.selectedIndex == 1}"/>
+			<esri:ArcGISImageServiceLayer url="http://geonexus/ArcGIS/rest/services/Imagery_Statewide/NAIP2009_Mercator/ImageServer"
+					visible="{gID.selectedIndex == 2}"/>
+			<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/LiDAR/LiDAR/MapServer"
+					visible="{mapStyle.selectedIndex == 0}"/>
+			<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Boundaries/Boundaries/MapServer"
+					visible="{mapStyle.selectedIndex == 1}"/>
+			<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Boundaries/COUNTY_BORDERS_SO/MapServer"
+					visible="{mapStyle.selectedIndex == 2}"/>
+		</esri:Map>
+		<!--<mx:ControlBar>-->
+		<s:DropDownList id="mapStyle" selectedIndex="4" x="766" y="-27">
+			<s:dataProvider>
+				<s:ArrayList>
+					<fx:String>Lidar-Tiles</fx:String>
+					<fx:String>Co-Borders</fx:String>
+					<fx:String>Boundary</fx:String>
+					<fx:String></fx:String>
+				</s:ArrayList>
+			</s:dataProvider>
+		</s:DropDownList>
+		<s:Label text="Map Style:" x="705" y="-20"/>
+		<!--</mx:ControlBar>-->
+	</s:Panel>	
+	<s:ButtonBar id="gID" right="5" selectedIndex="0" top="5">
+		<s:dataProvider><s:ArrayList>
+							<fx:String>Hghway Bmap</fx:String>
+							<fx:String>Normal Bmap</fx:String>
+							<fx:String>Imagery Naip</fx:String>				
+						</s:ArrayList></s:dataProvider>
+	</s:ButtonBar>
+	<!--Sets zoom-in by pressing shift while dragging the mouse attributes-->
+	<s:Label backgroundColor="0xefefef"	 color="0x000000" fontSize="12" fontWeight="bold" bottom="5" horizontalCenter="0" 
+			 paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" text="Press shift while dragging the mouse to zoom-in."/>
+</s:Application>

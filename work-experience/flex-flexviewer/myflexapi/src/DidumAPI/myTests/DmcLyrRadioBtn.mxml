@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	layout="vertical"
+	pageTitle="Dynamic Layer-Radio Btns">
+	
+	<fx:Script>
+		<![CDATA[
+		import mx.events.ItemClickEvent;
+		import mx.collections.ArrayCollection;
+		import mx.controls.RadioButton;
+				
+		private function loadLayerName():void
+		{
+			layerPanel.removeAllChildren();
+		
+			//loop through each layer and add as a radiobutton
+			for(var i:uint = 0; i < (dynamicLayer.layerInfos.length); i++) 
+			{
+				var radioBtn:RadioButton = new RadioButton;  //change to checkbox if so desired
+				radioBtn.groupName = "radioBtnGroup";
+				radioBtn.value = i;
+				radioBtn.label = dynamicLayer.layerInfos[i].name;
+				layerPanel.addChild(radioBtn);
+			}
+		
+			//set the visible layer the first radio button
+			radioBtnGroup.selectedValue = 0;
+			dynamicLayer.visibleLayers = new ArrayCollection([0]);
+		}
+		
+		private function radioClickHandler(event:ItemClickEvent):void
+		{
+			// update the visible layers to only show the layer selected
+			dynamicLayer.visibleLayers = new ArrayCollection([event.index]);
+		}
+		
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:HDividedBox width="100%" height="100%">
+		<esri:Map id="myMap">
+			<esri:extent>
+				<esri:Extent xmin="-126" ymin="27" xmax="-72" ymax="50">
+					<esri:SpatialReference wkid="4326"/>
+				</esri:Extent>
+			</esri:extent>
+			<esri:ArcGISDynamicMapServiceLayer id="dynamicLayer" load="loadLayerName();"
+				url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/{myURL.selectedItem}/MapServer" />
+		</esri:Map>
+	
+		<s:VGroup>	
+			<mx:ComboBox id="myURL" selectedIndex="0" horizontalCenter="0">
+				<mx:ArrayList>
+					<fx:String>Specialty/ESRI_StateCityHighway_USA</fx:String>
+					<fx:String>Specialty/ESRI_StatesCitiesRivers_USA</fx:String>
+					<fx:String>Demographics/ESRI_Census_USA</fx:String>
+				</mx:ArrayList>
+			</mx:ComboBox>
+	
+			<mx:Panel id="layerPanel" title="ESRI-Map" width="300" height="250" x="20" y="250" paddingLeft="20">
+				<mx:RadioButtonGroup id="radioBtnGroup" itemClick="radioClickHandler(event)"/>
+			</mx:Panel>
+		</s:VGroup>	
+	</mx:HDividedBox>	
+		
+</mx:Application>

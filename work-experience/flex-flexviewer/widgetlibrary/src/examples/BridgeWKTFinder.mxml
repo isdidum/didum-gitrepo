@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:owl="gov.iowadot.owl.operations.*"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   pageTitle="Example - Bridge WKT Finder"
+			   minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<owl:GetBridgeWKT id ="BridgeWKT">
+		</owl:GetBridgeWKT>
+	</fx:Declarations>
+	<s:Button x="371" y="159" label="Enter" click="{BridgeWKT.FHWANum=parseInt(input.text)}"/>
+	<s:TextInput id="input" x="225" y="159"/>
+	<s:Label x="121" y="164" text="Enter FHWA:" width="107" height="17" fontSize="16" fontFamily="Georgia"/>
+	<s:TextArea id="retVal" x="121" y="189" width="320" height="171" borderVisible="false" 
+				text="{(BridgeWKT.WKT!=null)?BridgeWKT.WKT:'Please type in another FHWANum, '+input.text+' is not a valid one.'}"/>
+</s:Application>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright © 2008 - 2009 ESRI
+//
+// All rights reserved under the copyright laws of the United States.
+// You may freely redistribute and use this software, with or
+// without modification, provided you include the original copyright
+// and use restrictions.  See use restrictions in the file:
+// <install location>/FlexViewer/License.txt
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:viewer="com.esri.viewer.*"		
+	xmlns:widgets="widgets.DotContainer.DataGrid.*"
+	layout="absolute" xmlns:Search="widgets.Search.*">
+	
+	<!--widgetConfigLoaded="init()"  not needed since .xml file not included-->
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.utils.GraphicUtil;
+			
+			import flash.events.*;
+			
+			import mx.collections.*;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import mx.events.MoveEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.ResultEvent;
+			//import spark.components.TitleWindow //Spark Component (s-type)
+				
+
+			private var myfloatdg:MyFloatDG;
+			private var fDataProvider:Object;
+			private var zoomScale:Number = 5000;
+			
+			public var myMap:Map;
+			public var myGraphicsLayer:GraphicsLayer;
+			[Bindable]private var searchResultAC:ArrayCollection;
+			[Bindable]private var msgVisible:Boolean = false;
+			
+			private function activateGraphic():void {
+				myGraphicsLayer = new GraphicsLayer();
+				myGraphicsLayer.symbol = sfs_iExp;
+				map.addLayer(myGraphicsLayer);
+			}
+			
+			private function showMessage(msg:String, swfVisible:Boolean):void
+			{
+				txtMessage.text = msg;
+				swfMessage.visible = swfVisible;
+				msgVisible = true;
+			}			
+			
+			private function clearMessage():void
+			{
+				msgVisible = false;
+			}
+						
+			private function doQuery():void
+			{				
+				var query:Query = new Query();
+				
+				if(rdBtn0.selected === true){ //CO_NAME LIKE '%FAYETTE%' works for COUNTY_BORDERS_SO w/ where-clause 
+					//query.returnGeometry = true; //converts to lowercase then queries [line below]
+					query.where = "UPPER (NEAR_CITY) LIKE UPPER ('%"+ fText.text + "%')"; 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn1.selected === true){
+					query.text = fText.text; //Inventory=ObjectID, there4 query.text 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn2.selected === true){
+					query.where = "YEAR_BUILT='"+ fText.text +"'"; //"ADDRESS1 LIKE '%"+ fText.text + "%'";
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}
+				query.outSpatialReference = map.spatialReference;
+				query.returnGeometry = true;
+				queryTask.execute(query, new AsyncResponder(onResult, onFault, null));  
+				showMessage("Loading...", true);
+				var gid:Number = 0;
+				
+				// on result
+				function onResult(featureSet:FeatureSet, token:Object = null):void                
+				{   
+					try
+					{
+						for each (var gra:Graphic in featureSet.features) {
+							var obj:Object = gra.attributes;
+							obj["gid"] = gid;
+							gid += 1;
+						}
+						myfloatdg = MyFloatDG(PopUpManager.createPopUp(map,MyFloatDG,false));
+						if(myfloatdg){
+							fDataProvider = featureSet.attributes;
+							PopUpManager.centerPopUp(myfloatdg);
+							myfloatdg.setdProvider = fDataProvider;
+							myfloatdg.setLength = featureSet.attributes.length; //didum(3-11-2011)
+							myfloatdg.setGraphicslayer = myGraphicsLayer;
+							myfloatdg.setZoomScale = zoomScale;
+							myfloatdg.setMap = myMap;
+							clearMessage();	
+						}	
+					}
+					catch (error:Error)
+					{
+						showMessage(error.message, false);
+					}	
+				}
+				
+				//on fault
+				function onFault(info:Object, token:Object = null) : void
+				{                    
+					showMessage(info.toString(), false);         
+				}	
+			}
+			
+			
+			/*
+			private function set onItemRollOver(event:ListEvent):void
+			{
+				findGraphicByAttributes(event.itemRenderer.data).symbol = sms_fExp;
+			}
+			
+			public function findGraphicByAttributes(attributes:Object):Graphic
+			{
+				for each(var graphic:Graphic in myGraphicsLayer.graphicProvider)
+				{
+					if(graphic.attributes === attributes)
+					{
+						map.extent = graphic.geometry.extent.expand(2.8);
+					}
+				}
+				return null;
+			}
+			*/
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Fill, draws solid red line around Polygon on initial expansion -->
+		<esri:SimpleFillSymbol id="sfs_iExp" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!--Fill Polygon with purple & draws solid blue line around Polygon on final expansion-->
+		<esri:SimpleFillSymbol id="sms_fExp" style="solid" alpha="0.6" color="0x6600FF">
+			<esri:SimpleLineSymbol width="4" color="0xFF0000" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Layer with US States: Point to Geonexus:01/12/2011-->
+		<esri:QueryTask id="queryTask" showBusyCursor="true"
+			url="http://geonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer/0"
+			useAMF="true"/>
+	</fx:Declarations>	
+	
+	<viewer:WidgetTemplate id="wTemplate" height="200" width="340">
+		<mx:ViewStack id="viewStack" width="100%" height="100%" creationPolicy="all" paddingTop="4">
+			<mx:VBox id="recVbox" width="100%" height="100%" verticalGap="4" horizontalAlign="center">
+				<mx:HBox id="boxMessage" visible="{msgVisible}" includeInLayout="{msgVisible}" width="100%">
+					 <!--Widget Loader-->
+					<mx:SWFLoader id="swfMessage" source="assets/images/loader.swf" visible="false" />
+					
+					<mx:Text id="txtMessage" text="" styleName="WidgetText" width="75%"/>
+				</mx:HBox>
+		            <mx:Label text="Specify Search" styleName="WidgetText" />
+				<mx:HBox>	
+		            <mx:TextInput id="fText" text="Spencer" />
+		            <mx:Button label="Getgrid..." click="doQuery();" />
+		        </mx:HBox>
+				
+				<s:VGroup horizontalAlign="left" gap="10" left="15" top="30" color="0x000000">
+					<mx:RadioButton id="rdBtn0" selected="true" fontWeight="bold"
+						label="Search by City Name" labelPlacement="right"/>
+					<mx:RadioButton id="rdBtn1" selected="false" fontWeight="bold"
+						label="By Inventory Number" labelPlacement="right"/>
+					<mx:RadioButton id="rdBtn2" selected="false" fontWeight="bold"
+						label="Also by Year Built" labelPlacement="right"/>
+				</s:VGroup>
+				<!--
+				<Search:SearchResultDataGroup id="searchResultDG" dataProvider="{searchResultAC}"
+					mouseClick="clickRecord(event)" mouseOut="mouseOutRecord(event)"
+					mouseOver="mouseOverRecord(event)">
+					<Search:layout>
+						<s:VerticalLayout gap="2" horizontalAlign="justify" useVirtualLayout="true" />
+					</Search:layout>
+				</Search:SearchResultDataGroup>
+				-->
+			</mx:VBox>
+		</mx:ViewStack>		
+	</viewer:WidgetTemplate>	
+</viewer:BaseWidget>

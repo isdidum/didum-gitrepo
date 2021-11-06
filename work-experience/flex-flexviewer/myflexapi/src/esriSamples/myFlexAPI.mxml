@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/halo"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Fiaw Training"
+    skinClass="DidumAPI.myTests.mySkin.AppSkin"
+	preloaderChromeColor="#3E69D7" backgroundColor="#FBFBFD" 
+	xmlns:mx2="library://ns.adobe.com/flex/mx">
+	<fx:Style source="DidumAPI/myTests/myCSS.css"/>
+	<fx:Script>
+		<![CDATA[
+			import DidumAPI.myTests.mySkin.AppSkin;
+			
+			import mx.controls.Alert;
+			import mx.events.CalendarLayoutChangeEvent;
+			
+			private function dateChangeHandler(event:CalendarLayoutChangeEvent):void{
+				Alert.show('You have selected ' + event.target.selectedDate.toDateString());
+				if((event.target.id == 'returnDate') && (pickupDate.selectedDate > returnDate.selectedDate)){
+					Alert.show('Pickup date must be scheduled before return date.');
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!--Place non-visual elements here-->
+		<s:ArrayList id="employeeList">
+			<fx:String>Andrew Brilliam</fx:String>
+			<fx:String>Ben Crater</fx:String>
+			<fx:String>David Avenon</fx:String>
+			<fx:String>Annette Kotter</fx:String>
+			<fx:String>Brian Minnows</fx:String>
+			<fx:String>Barry Kramson</fx:String>
+		</s:ArrayList>
+		
+	</fx:Declarations>
+	<s:Label x="80" y="34" text="Company Vehicle Request Form" styleName="addHeader" color="#3772EA" />
+	<mx2:Form x="80" y="72">
+		<mx2:FormItem label="Employee:">
+			<s:DropDownList id="myEmployee" dataProvider="{employeeList}"/>
+		</mx2:FormItem>
+		<mx2:FormHeading label="Personal Information"/>
+		<mx2:FormItem label="Office Phone:">
+			<s:TextInput/>
+		</mx2:FormItem>
+		<mx2:FormItem label="Mobile Phone:">
+			<s:TextInput/>
+		</mx2:FormItem>
+		<mx2:FormHeading label="Date Requested"/>
+		<mx2:FormItem label="Pickup Date:">
+			<mx2:DateChooser id="pickupDate" showToday="true" 
+				change="dateChangeHandler(event);"/>
+		</mx2:FormItem>
+		<mx2:FormItem label="Return Date:">
+			<mx2:DateChooser id="returnDate" showToday="true" 
+				change="dateChangeHandler(event);"/>
+		</mx2:FormItem>
+		<mx2:FormItem>
+			<s:Button label="Submit Request"/>
+		</mx2:FormItem>
+	</mx2:Form>
+	
+</s:Application>

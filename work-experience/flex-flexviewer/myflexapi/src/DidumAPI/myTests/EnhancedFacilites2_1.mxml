@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/halo"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	styleName="plain" xmlns:samples="com.esri.ags.samples.*"
+	xmlns:containers="com.iwobanas.containers.*"  
+	pageTitle="Enhanced Facilities2_1"
+	xmlns:mx1="library://ns.adobe.com/flex/mx"
+	creationComplete="startDrawTool();">
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.events.IdentifyEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Polygon;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+			import com.esri.ags.tasks.supportClasses.IdentifyResult;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.tools.DrawTool;
+			import com.esri.ags.tools.NavigationTool;
+			import com.esri.ags.utils.GraphicUtil;
+			import com.iwobanas.skins.CollapsiblePanelSkin;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.ItemClickEvent;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			
+			
+			public var g:Graphic; //added public keyword
+			private var query:Query;
+			private var myDrawTool:DrawTool;
+			/*private var identifyMapPoint:MapPoint;*/
+			private var myGeometry:Geometry;
+			private var identifyParams:IdentifyParameters;
+			[Bindable]private var lenFeature:Number = 0;
+			[Bindable]private var getTitle:String = 'Features : ' + lenFeature;
+			[Bindable]private var myFeatures:ArrayCollection;
+			[Bindable]private var lastIdentResultGraphic:Graphic;
+			
+			
+			//IdentifyTask Begins			
+			private function startDrawTool():void {
+				myDrawTool = new DrawTool();
+				myDrawTool.map = myMap;
+				myTbb.addEventListener(ItemClickEvent.ITEM_CLICK, activateClick);
+				myDrawTool.addEventListener(DrawEvent.DRAW_END, onDrawEnd);
+			}
+			
+			private function doIdentify():void {
+				//myGraphicsLayer2.clear();
+				
+				identifyParams = new IdentifyParameters();
+				identifyParams.tolerance = 3;
+				identifyParams.returnGeometry = true;
+				identifyParams.geometry = myGeometry; 
+				identifyParams.mapExtent = myMap.extent;
+				identifyParams.width = myMap.width;
+				identifyParams.height = myMap.height;
+				identifyParams.layerIds = [0];
+				identifyParams.spatialReference = myMap.spatialReference;
+				
+				doExecuteIdentifyNow();
+			}
+			
+			private function doExecuteIdentifyNow():void {
+				identifyTask.execute(identifyParams, new AsyncResponder(onMyResult, onMyFault, null));
+			}
+			
+			private function onMyResult(results:Array, token:Object=null):void {
+				if(results && results.length > 0) 
+				{
+					for each(var result:IdentifyResult in results) {
+						//var result:IdentifyResult = results[0];
+						var resultGraphic:Graphic = result.feature;
+						var setGeom:Geometry = myGeometry;
+						
+						switch(resultGraphic.geometry.type)
+						{
+							case Geometry.POLYGON: 
+							{						
+								var myResults:Array = [];
+								for (var i:int = 0; i<results.length; i++) {
+									myResults[i] = results[i].feature.attributes;
+								}
+								break;
+							}
+						}
+						resultGraphic.symbol = sfs_iExp; //sfs->only extent works
+						myGraphicsLayer2.visible = true;
+						//add new features to myGraphicsLayer2 based on identifytask
+						myGraphicsLayer2.add(resultGraphic);				
+					}
+					myGrid.visible = true;
+					myGrid.dataProvider = myResults; //myFeatures;  
+					bPanel.title = "Features : " + results.length;
+				}
+			}
+			
+			private function onMyFault(error:Object, token:Object=null):void {
+				Alert.show(String(error), "Identify Error");
+			}
+			
+			private function activateClick(event:ItemClickEvent):void {
+				if(!myDrawTool)
+					myDrawTool = new DrawTool();
+				myDrawTool.showDrawTips = true;
+				myDrawTool.markerSymbol = sms;
+				myDrawTool.fillSymbol = sfs; 
+				myDrawTool.lineSymbol = sls;
+				if(myTbb.selectedIndex < 0) {
+					myDrawTool.deactivate();
+				} else {
+					switch (event.item.label)
+					{
+						case "MAPPOINT": {
+							myTbb.toolTip = "Point";
+							myDrawTool.activate(DrawTool.MAPPOINT);
+							break;
+						}
+						case "POLYLINE": {
+							myTbb.toolTip = "Freehand Polyline";
+							myDrawTool.activate(DrawTool.POLYLINE);
+							break;
+						}
+						case "POLYGON": {
+							myTbb.toolTip = "Polygon";
+							myDrawTool.activate(DrawTool.POLYGON);
+							break;
+						}
+						case "EXTENT": {
+							myTbb.toolTip = "Extent";
+							myDrawTool.activate(DrawTool.EXTENT);
+							break;
+						}
+						/*case "CLEAR": {
+							myTbb.toolTip = "Clear"
+							myGraphicsLayer.clear();
+							//myTxtArea.visible = false;
+							myGrid.dataProvider = null;
+							bPanel.title = "Feature : 0";
+						}*/	
+					}
+				}
+			}
+			
+			private function onDrawEnd(event:DrawEvent):void {
+				clearMap();
+				myGraphicsLayer.add(event.graphic);
+				myGeometry = event.graphic.geometry as Geometry;
+				myDrawTool.deactivate();		//added 6-14-2011, allows identifyMapPt to be active
+				myTbb.selectedIndex = -1;
+				myTbb.toolTip = null;
+				doIdentify();
+			}
+			
+			private function clearMap():void {
+				myGeometry = null;
+				myDrawTool.deactivate(); // added, allows identifyMapPt to be active
+				myGraphicsLayer.clear();
+			}
+			
+//QueryTask Begins			
+			private function doQuery():void
+			{				
+				query = new Query();
+				if(rdBtn0.selected === true){ //CO_NAME LIKE '%FAYETTE%' works for COUNTY_BORDERS_SO w/ where-clause
+					//converts to lowercase then queries [line below]
+					query.where = "UPPER (NEAR_CITY) LIKE UPPER ('%"+ fText.text + "%')"; 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn1.selected === true){
+					query.text = fText.text; //Inventory=ObjectID, there4 query.text 
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}else if(rdBtn2.selected === true){
+					query.where = "YEAR_BUILT='"+ fText.text +"'"; //"ADDRESS1 LIKE '%"+ fText.text + "%'";
+					query.outFields = ["ADDRESS1","BUILDING_TYPE","COST_CENTER","INVENTORY_NUMBER",
+						"PHONE_NUMBER","SQUARE_FOOTAGE","UKEY,YEAR_BUILT"]; //["*"];
+				}
+				
+				query.outSpatialReference = myMap.spatialReference;
+				query.returnGeometry = true;
+				doExecuteQueryNow();
+			}
+			
+			private function doExecuteQueryNow():void {
+				queryTask.execute(query, new AsyncResponder(onResult, onFault));
+			}
+			
+			private	function onResult(featureSet:FeatureSet, token:Object = null):void
+			{
+				lenFeature = featureSet.features.length;
+				if (lenFeature == 0)
+				{
+					Alert.show("No data found. Please try again.");
+				} else {
+					//add new features to myGraphicsLayer2 based on querytask
+					myGraphicsLayer2.graphicProvider = queryTask.executeLastResult.features;
+					myGraphicsLayer2.symbol = sfs_iExp;
+					
+					var qGraphicsExtent:Extent = GraphicUtil.getGraphicsExtent(featureSet.features);
+					if (qGraphicsExtent)
+					{
+						myMap.extent = qGraphicsExtent.expand(4); //Initial Expansion
+						myGrid.visible = true;
+						myGrid.dataProvider = queryTask.executeLastResult.attributes;
+						//queryTask.executeLastResult.attributes; //featureSet.attributes; //myFeatures; 
+						bPanel.title = "Features : " + lenFeature;
+					}
+				}
+			}
+			
+			private function onFault(info:Object, token:Object = null):void {
+				Alert.show(info.toString());
+			}
+			
+			// Highlight facility on map as user clickmouse datagrid cell	
+			private function onItemClick(event:ListEvent) : void
+			{
+				findGraphicByAttributes(event.itemRenderer.data).symbol = sms_fExp;
+				function findGraphicByAttributes(myAtb:Object) : Graphic
+				{
+					for each(var myGra:Graphic in myGraphicsLayer2.graphicProvider) {				
+						if(myGra.attributes === myAtb){
+							myMap.extent = myGra.geometry.extent.expand(2.8); //Final Expansion
+							return myGra;
+						} 	
+					}	
+					return null;
+				}
+			}	
+			
+			private function onItemClick2(event:ListEvent) : void
+			{
+				if(myGraphicsLayer2){
+					var highlightedGraphic:Graphic;
+					highlightedGraphic = findGraphicByAttributes2(event.itemRenderer.data);
+					highlightedGraphic.symbol = sms_fExp;   //was commentted out
+					
+					var graphics:Array = new Array();
+					graphics[0] = highlightedGraphic;
+					var iGraphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphics);
+					myMap.extent = iGraphicsExtent.expand(4.0); // zoom out a little
+				} 				
+				
+				function findGraphicByAttributes2(myAtb:Object) : Graphic
+				{			
+					for each (var myGra2:Graphic in myGraphicsLayer2.graphicProvider) {
+						if(myGra2.attributes === myAtb) {
+							return myGra2;
+						}
+					}		
+					return null;
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/halo";
+		@namespace containers "com.iwobanas.containers.*";
+		
+		containers|CollapsiblePanel {
+			skin-class: ClassReference('com.iwobanas.skins.CollapsiblePanelSkin');
+		}
+		
+	</fx:Style>
+	
+	<fx:Declarations>
+		<!-- Symbol for all line shapes-->
+		<esri:SimpleLineSymbol id="sls" width="2" color="0x00FF00"/>
+		
+		<!-- Symbol for all polygon shapes--> 
+		<esri:SimpleFillSymbol id="sfs" color="#5B5BFF" style="solid">
+			<esri:outline>
+				<esri:SimpleLineSymbol width="1" color="#0099FF"/>
+			</esri:outline>
+		</esri:SimpleFillSymbol>
+				
+		<!-- Symbol for where the user clicks -->
+		<esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="circle"/>
+		
+		<!-- Identify Task concurrency="last" -->
+		<esri:IdentifyTask id="identifyTask" concurrency="last" disableClientCaching="true" 
+			url="http://geonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer"/>
+		
+		<!--Fill Polygon with purple & draws solid blue line around Polygon on final expansion-->
+		<esri:SimpleFillSymbol id="sms_fExp" style="solid" alpha="0.6" color="0x6600FF">
+			<esri:SimpleLineSymbol width="2" color="0xFF0000" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Fill Polygon with purple & draws solid red line around Polygon on initial expansion -->
+		<esri:SimpleFillSymbol id="sfs_iExp" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="4" color="0x0000FF" style="solid"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Layer with US States: Point to Geonexus:01/12/2011-->
+		<esri:QueryTask id="queryTask" showBusyCursor="true"
+			url="http://geonexus/ArcGIS/rest/services/Facilities/BUILDING_SO_V/MapServer/0"
+			useAMF="true"/>
+		
+		<!--navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:HorizontalLayout gap="1" paddingRight="0" paddingLeft="0" paddingTop="0" paddingBottom="0"/>
+	</s:layout>
+	
+	<containers:CollapsiblePanel height="100%" title="Collapsible Configuration">
+		
+		<!-- Left Panel -->
+		<s:Panel id="leftPanel" height="100%" color="0x3300FF" title="Map Contents" 
+			borderVisible="false" backgroundColor="0xefefef" direction="ltr" left="2" 
+			right="2" bottom="0" top="0">		
+			
+			<mx1:TabNavigator height="150" width="280" backgroundColor="0xB2BFC6" color="0x000000">
+				
+				<s:NavigatorContent id="myTab1" label="Draw Tools" color="#EEEEEE">					
+					<s:BorderContainer width="100%" height="50" backgroundColor="0x99CCFF" borderVisible="true" 
+						color="0x006699" alpha="0.90">
+						<mx1:ToggleButtonBar id="myTbb" itemClick="activateClick(event);"
+							labelField="null" selectedIndex="-1" toggleOnClick="true" bottom="5" top="5" left="1">
+							<fx:Object icon="@Embed(source='assets/i_draw_point.png')" label="MAPPOINT"/>
+							<fx:Object icon="@Embed(source='assets/i_draw_line.png')" label="POLYLINE"/>
+							<fx:Object icon="@Embed(source='assets/i_draw_poly.png')" label="POLYGON"/>
+							<fx:Object icon="@Embed(source='assets/i_draw_rect.png')" label="EXTENT"/>
+						</mx1:ToggleButtonBar>
+					</s:BorderContainer>
+				</s:NavigatorContent>
+				
+				<s:NavigatorContent id="myTab2" label="Search Item" color="0xEEEEEE">
+					<s:BorderContainer backgroundColor="0xEEEEEE" borderVisible="false" 
+						left="5" right="5" top="0">		
+						<s:layout>
+							<s:HorizontalLayout horizontalAlign="left"/>
+						</s:layout>
+						<s:TextInput id="fText"	enter="doQuery()" width="100" focusColor="0xa2d2ff" 
+							toolTip="Select a radio-button &#13; then enter some data here"
+							color="0x66CCFF" borderColor="0xFF0000" fontSize="12" fontWeight="bold" top="10"/>
+						<s:Button click="doQuery()" label="Query" color="0x000000"/>
+					</s:BorderContainer>
+					<!--Radio Buttons-->
+					<s:VGroup horizontalAlign="left" gap="10" left="15" top="30" color="0x000000">
+						<mx1:RadioButton id="rdBtn0" selected="true" fontWeight="bold" 
+							label="Search by City Name" labelPlacement="right"/>
+						<mx1:RadioButton id="rdBtn1" selected="false" fontWeight="bold" 
+							label="By Inventory Number" labelPlacement="right"/>
+						<mx1:RadioButton id="rdBtn2" selected="false" fontWeight="bold" 
+							label="Also by Year Built" labelPlacement="right"/>
+					</s:VGroup>
+					<!--</mx:Box>-->
+				</s:NavigatorContent>
+																
+				<s:NavigatorContent id="myTab3" label="Map Layer" color="0xEEEEEE">			
+					<!--Drop-DownList-->
+					<mx1:Box borderStyle="solid" left="5" paddingTop="10" paddingBottom="10" paddingLeft="10"
+						paddingRight="10" width="270" height="110" backgroundColor="0xEEEEEE">
+						<s:DropDownList id="myURL" width="190" horizontalCenter="0" requireSelection="true" 
+							selectedIndex="1" color="0x000000">
+							<s:ArrayList>
+								<fx:String>Facilities/PARCEL_SO_V</fx:String>
+								<fx:String>Facilities/BUILDING_SO_V</fx:String>
+								<fx:String>Basemap/Basemap_Overlay</fx:String>
+							</s:ArrayList>
+						</s:DropDownList>
+					</mx1:Box>
+					<!--Dynamic Layer on/off-->
+					<samples:LayerTOC width="280" height="550" mapLayer="{myDynamicService}" 
+						top="120" left="0" color="0x000000"/>
+				</s:NavigatorContent>
+				
+			</mx1:TabNavigator>		
+			
+		</s:Panel>
+	</containers:CollapsiblePanel>
+	
+	
+	<!-- Center Panel -->
+	<s:Panel id="centerPanel" width="100%" height="100%" color="0x3300FF" 
+		title="Facility Web Map Application" borderVisible="true" autoLayout="true"
+		backgroundColor="0xFFFFFF" direction="ltr" left="290" right="0" bottom="5" top="2.5">
+		
+		<!--Navigation ToolBar Buttons-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="10" horizontalAlign="center" paddingBottom="5"
+				paddingLeft="5" paddingRight="5" paddingTop="5"/>
+		</s:controlBarLayout>
+		<s:controlBarContent>
+			<s:HGroup gap="10" width="30%">
+				<mx1:Button click="navTool.zoomToPrevExtent();" toolTip="Previous Extent"
+					disabledIcon="@Embed('assets/images/left.gif')"	
+					downIcon="@Embed('assets/images/left.gif')"
+					enabled="{!navTool.isFirstExtent}"
+					overIcon="@Embed('assets/images/left.gif')" 
+					upIcon="@Embed('assets/images/left.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="navTool.zoomToNextExtent();" toolTip="Next Extent"
+					disabledIcon="@Embed('assets/images/right.gif')" 
+					downIcon="@Embed('assets/images/right.gif')"
+					enabled="{!navTool.isLastExtent}"
+					overIcon="@Embed('assets/images/right.gif')"
+					upIcon="@Embed('assets/images/right.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="navTool.zoomToFullExtent();" toolTip="Full Extent"
+					downIcon="@Embed('assets/images/web.gif')"
+					overIcon="@Embed('assets/images/web.gif')"
+					upIcon="@Embed('assets/images/web.gif')" width="35" height="35"/>
+				
+				<mx1:Button click="{myGraphicsLayer2.clear(); myGraphicsLayer.clear(); navTool.deactivate();
+					bPanel.title='Features : 0'; myGrid.visible=false;}" 
+					downIcon="@Embed('assets/images/cancel.gif')"
+					enabled="true" toolTip="Clear Graphic"
+					overIcon="@Embed('assets/images/cancel.gif')"
+					upIcon="@Embed('assets/images/cancel.gif')" width="35" height="35"/>
+				<!--More Navigation Tools-->
+				<mx1:Button id="myZoomIn" click="navTool.activate(NavigationTool.ZOOM_IN);"
+					disabledIcon="@Embed('assets/images/zoomin.gif')"	
+					downIcon="@Embed('assets/images/zoomin.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="ZoomIn"
+					overIcon="@Embed('assets/images/zoomin.gif')" 
+					upIcon="@Embed('assets/images/zoomin.gif')" width="35" height="35"/>
+				<mx1:Button id="myZoomOut" click="navTool.activate(NavigationTool.ZOOM_OUT);"
+					disabledIcon="@Embed('assets/images/zoomout.gif')" 
+					downIcon="@Embed('assets/images/zoomout.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="ZoomOut"
+					overIcon="@Embed('assets/images/zoomout.gif')"
+					upIcon="@Embed('assets/images/zoomout.gif')" width="35" height="35"/>
+				<mx1:Button id="myPan" click="navTool.activate(NavigationTool.PAN);"
+					disabledIcon="@Embed('assets/images/hand.gif')" 
+					downIcon="@Embed('assets/images/hand.gif')"
+					enabled="{!navTool.deactivate()}" toolTip="Pan"
+					overIcon="@Embed('assets/images/hand.gif')"
+					upIcon="@Embed('assets/images/hand.gif')" width="35" height="35"/>
+
+			</s:HGroup>
+		</s:controlBarContent>
+		<!--click="vDivBox_clickHandler(event)"-->
+		<mx1:VDividedBox id="vDivBox" width="100%" height="100%">
+			<esri:Map id="myMap" level="7" openHandCursorVisible="false" logoVisible="false">
+				<esri:extent>
+					<esri:Extent xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25">
+						<esri:SpatialReference wkid="102113"/>
+					</esri:Extent>
+				</esri:extent>
+				<!--Current map layers: Point to Geonexus:01/12/2011-->
+				<esri:ArcGISTiledMapServiceLayer visible="{getId.selectedIndex == 0}" alpha="1.0"
+					url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+				<!--must be the 2nd layer inorder to see layer-label from building_so_v-->
+				<esri:ArcGISTiledMapServiceLayer id="AerialImagery" 
+					visible="{getId.selectedIndex == 1}" alpha="1.0"
+					url="http://geonexus/ArcGIS/rest/services/AerialImagery/Aerial_Imagery/MapServer"/> 
+				
+				<esri:ArcGISDynamicMapServiceLayer id="myDynamicService" load="myDynamicService.defaultVisibleLayers()"
+					url="http://geonexus/ArcGIS/rest/services/{myURL.selectedItem}/MapServer" alpha="1.0"/>
+				
+				<esri:GraphicsLayer id="myGraphicsLayer2"/>
+				<!--symbol="{sfs_iExp}" graphicProvider="{queryTask.executeLastResult.features}"/-->
+				<esri:GraphicsLayer id="myGraphicsLayer"/>
+				
+			</esri:Map>
+			<!--titleIcon="{downClass}"-->
+			<mx1:Panel id="bPanel" title="{getTitle}" width="100%" height="38%" 
+				color="0x000000" bottom="0" left="0" right="0">
+				<mx1:DataGrid id="myGrid" width="100%" height="100%" visible="false" 
+					itemClick="onItemClick(event);onItemClick2(event);">	
+					<mx1:columns>
+						<!--<mx1:DataGridColumn width="15" headerText="#" dataField="COUNT"/>-->
+						<mx1:DataGridColumn width="130" headerText="ADDRESS" dataField="ADDRESS1"/>
+						<mx1:DataGridColumn width="100" headerText="BLDG TYPE" dataField="BUILDING_TYPE"/>
+						<mx1:DataGridColumn width="73" headerText="COST-CTR" dataField="COST_CENTER"/>
+						<mx1:DataGridColumn width="43" headerText="YEAR" dataField="YEAR_BUILT"/>
+						<mx1:DataGridColumn width="65" headerText="PHONE" dataField="PHONE_NUMBER"/>
+						<mx1:DataGridColumn width="60" headerText="FTAGE^2" dataField="SQUARE_FOOTAGE"/>
+						<mx1:DataGridColumn width="43" headerText="UKEY" dataField="UKEY"/>
+						<mx1:DataGridColumn width="75" headerText="INVENTORY" dataField="INVENTORY_NUMBER"/>
+					</mx1:columns>
+				</mx1:DataGrid>
+			</mx1:Panel>			
+		</mx1:VDividedBox>
+		
+		<!--Standalone ButtonBar-->	
+		<s:ButtonBar id="getId" selectedIndex="0" right="2" top="0" requireSelection="false">
+			<s:dataProvider>
+				<s:ArrayList>
+					<fx:String>Basemap</fx:String>
+					<fx:String>Imagery</fx:String>
+				</s:ArrayList>
+			</s:dataProvider>
+		</s:ButtonBar>
+	</s:Panel>
+				
+</s:Application>

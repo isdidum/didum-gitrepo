@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application 
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="DeePack Close/Open App" xmlns:DeePackage="DeePackage.*">
+	<!---
+		Files included:
+		@ CollapsibleContainer.as
+		@ CollapseContainerSkin.mxml
+	-->
+	
+	<fx:Script>
+		<![CDATA[
+			import DeePackage.CollapseContainerSkin;
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!--- Place non-visual elements (e.g., services, value objects) here -->
+		<!--Basemap iExtent-->
+		<esri:Extent id="myExtB" xmin="-10884964.57" ymin="4660003.62" xmax="-9907264.87" ymax="5649404.52" 
+			spatialReference="{new SpatialReference(102113)}" />
+	</fx:Declarations>
+	
+	<!--Left Panel-->
+	<s:Panel id="leftPanel" height="100%" color="0x000000" title="Left Panel" borderVisible="false"
+		backgroundColor="0xefefef" direction="ltr" left="5" right="5" bottom="5" top="2.5">
+
+	</s:Panel>
+	
+	<!--The center panel -->
+	<s:Panel id="centerPanel" height="100%" color="0x000000" title="Center Panel" borderVisible="false"
+		backgroundColor="0xFFFFFF" direction="ltr" left="300" right="0" bottom="5" top="2.5" fontWeight="bold">
+		
+		<s:RichText top="5" left="5" right="5" color="0x00000">
+			Click on the map graphic to see identified features.
+		</s:RichText>
+		
+		<esri:Map id="myMap" extent="{myExtB.expand(1)}"  openHandCursorVisible="false" logoVisible="false"
+			left="0" right="0" top="0" bottom="0" verticalCenter="-16" horizontalCenter="0">
+			<esri:ArcGISDynamicMapServiceLayer 
+				url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap_Overlay/MapServer" visible="true"/>
+		</esri:Map>
+	</s:Panel>
+	
+</s:Application>

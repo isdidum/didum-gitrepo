@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags">
+	
+	<mx:HDividedBox height="100%" width="100%" dividerRelease="handleDivderRelease()">
+		<fx:Script>
+			<![CDATA[
+				import mx.controls.CheckBox;
+				import mx.controls.ComboBox;
+				import mx.controls.dataGridClasses.DataGridColumn;
+				
+				public var counter : int = 0;
+				[Bindable]public var conDataProvider : Array =[{label : "col1", data : "c1"},
+					{label : "col2", data : "c2"},
+					{label : "col3", data : "c3"},
+					{label : "col4", data : "c4"},
+					{label : "col5", data : "c5"},
+					{label : "col6", data : "c6"}];
+				
+				
+				private function hideShowColumns():void {
+					var actualColumns:Array = ResultGrid.columns;
+					var actualSelectedColumns:Array =  lstColumns.selectedItems;
+					var dataGridColumn:DataGridColumn;
+					var sDataField:String;
+					var sDataFieldCur:String;
+					var columnVisible:Boolean
+					for (var i:int=0;i<actualColumns.length;i++)  {
+						columnVisible = false
+						dataGridColumn = actualColumns[i];
+						sDataField = dataGridColumn.dataField;
+						for (var j : int = 0; j < actualSelectedColumns.length; j++)  {
+							if(actualSelectedColumns[j] == null) continue;
+							sDataFieldCur = actualSelectedColumns[j].data;
+							if (sDataFieldCur == sDataField)  {
+								columnVisible = true;
+								break;
+							}			  
+						}       
+						if (columnVisible) {
+							dataGridColumn.visible = true;
+						} else  {
+							dataGridColumn.visible = false;
+						}
+					}
+				}
+				
+				private function selectAll():void{
+					lstColumns.selectedIndices = [0,1,2,3,4,5];
+					hideShowColumns();
+				}
+				
+				private function clearAll():void{
+					lstColumns.selectedIndices = [];
+					hideShowColumns();
+				}
+				
+				private function setDefault():void{
+					lstColumns.selectedIndices = [0,1,2,3];
+					hideShowColumns();
+				}
+				
+				private function handleDivderRelease():void{
+					if(counter == 0){
+						controlBox.width = 0;
+					}else if(counter == 1){
+						controlBox.width = 120;
+					}
+					counter = (counter + 1) % 2;
+				}
+				
+			]]>
+		</fx:Script>
+		
+		<mx:VBox id="controlBox" height="100%" width="120" maxWidth="120" verticalGap="0" horizontalScrollPolicy="off">
+			<mx:Label text="Selected columns" fontWeight="bold" />
+			<mx:List height="100%" width="120" id="lstColumns" dataProvider="{conDataProvider}"
+				labelField="label" borderColor="#000000"
+				allowMultipleSelection="true" click="hideShowColumns()"
+				selectedIndices="[0,1,2,3]"/>
+			<mx:TextArea wordWrap="true" selectable="false" editable="false" borderStyle="none"
+				text="For multiple selection use ctrl/shift keys" width="120" />
+			<mx:Spacer height="5" />
+			<mx:Button label="Select All"  width="100%" click="selectAll()"/>
+			<mx:Button label="Default"  width="100%" click="setDefault()"/>
+			<mx:Button label="Clear All" width="100%" click="clearAll()"/>
+		</mx:VBox>
+		<mx:VBox height="100%" width="100%">
+			<mx:DataGrid height="100%" id="ResultGrid" selectedIndex="0" enabled="true" selectable="true">
+				<mx:columns>
+					<mx:DataGridColumn headerText="col1" dataField="c1" visible="true" />
+					<mx:DataGridColumn headerText="col2" dataField="c2" visible="true" />
+					<mx:DataGridColumn headerText="col3" dataField="c3" visible="true" />
+					<mx:DataGridColumn headerText="col4" dataField="c4" visible="true" />
+					<mx:DataGridColumn headerText="col5" dataField="c5" visible="false" />
+					<mx:DataGridColumn headerText="col6" dataField="c6" visible="false" />
+				</mx:columns>
+			</mx:DataGrid>
+		</mx:VBox>
+	</mx:HDividedBox>
+</mx:Application> 

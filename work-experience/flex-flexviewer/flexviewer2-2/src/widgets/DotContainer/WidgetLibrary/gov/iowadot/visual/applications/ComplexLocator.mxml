@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group creationComplete="creationCompleteHandler(event)"
+		 xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:WidgetLibrary="widgets.DotContainer.WidgetLibrary.*"
+		 xmlns:jfire="widgets.DotContainer.WidgetLibrary.gov.iowadot.jetfire.*"	 
+		 xmlns:operations="widgets.DotContainer.WidgetLibrary.gov.iowadot.jetfire.operations.*">
+
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.symbols.*;
+			import com.esri.ags.utils.WebMercatorUtil;
+			
+			import flash.geom.Point;
+			
+			import widgets.DotContainer.WidgetLibrary.gov.iowadot.jetfire.operations.LatLongToLrs;
+			//gov.iowadot.jetfire.operations.LatLongToLrs;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.MoveEvent;
+			
+			public var MapControl:Map;
+			private var _window : UIComponent;
+			private var _originalPosition : Point;
+			private var _mouseDownPosition : Point;
+			//public var _graphics:GraphicsLayer = new GraphicsLayer();
+			public var myGraphicsLayer:GraphicsLayer = new GraphicsLayer();
+			
+			[Bindable]public var X:String = "";
+			[Bindable]public var Y:String = "";
+			
+			//Button Styling information
+			[Embed(source="assets/images2/settings.png")]
+			[Bindable]public var normalButtonStyle:Class; 
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void {
+				MapControl.useHandCursor = false;
+				MapControl.openHandCursorVisible = false;
+				
+				this.useHandCursor = false;
+				this.cursorManager.hideCursor();
+				
+				Mouse.cursor = MouseCursor.ARROW;
+				MapControl.addLayer(myGraphicsLayer,-1);
+				titleWindow.setStyle("skin",normalButtonStyle);
+				this.MapControl.doubleClickZoomEnabled = false;
+				this.MapControl.addEventListener(MouseEvent.MOUSE_MOVE, onMapMouseMove);
+				this.MapControl.addEventListener(MouseEvent.DOUBLE_CLICK, onMapMouseClick);
+				convert.addEventListener("onResultReturn",step1);
+				getDatum.addEventListener("onResultReturn",step2);
+				getLD.addEventListener("onResultReturn",step3);
+				getRoute.addEventListener("onResultReturn",step3);
+			}
+			
+			private function onMapMouseClick(event:MouseEvent):void {
+				var screenPoint:Point = new Point(event.stageX, event.stageY);
+				var mapPoint:MapPoint =  this.MapControl.toMap(screenPoint);
+				const llPnt:MapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+				convert.Lon = llPnt.x;
+				convert.Lat = llPnt.y;
+				
+				//Adding Graphical point
+				myGraphicsLayer.clear();
+				myGraphicsLayer.add(new Graphic(mapPoint, new SimpleMarkerSymbol()));
+				//var offset:MapPoint = mapPoint;
+				//offset.y += 10;
+				myGraphicsLayer.add(new Graphic(mapPoint , new TextSymbol(X+",       "+Y, null, 0x0000FF)));
+				//Present Literal Description
+				//lblLD.text = getLD.LiteralDescription;
+			}
+			
+			private function step1(event:Event):void {//LLtoLRS
+				getDatum.X = Number(convert.X);
+				getDatum.Y = Number(convert.Y);
+			}
+			
+			private function step2(event:Event):void {//Literal
+				getLD.XmlObject = getDatum.LinearReference;
+			}
+			
+			private function step3(event:Event):void {//RP
+				getRoute.XmlObject = getDatum.LinearReference;
+				getRP.RouteId = getRoute.RouteId;
+				getRP.XmlObject = getDatum.LinearReference;
+				if(cbOffType.selectedItem == "Positive"){
+					getRP.OffsetType = 1;
+				}else if(cbOffType.selectedItem == "Negative"){
+					getRP.OffsetType = -1;
+				}else{
+					getRP.OffsetType = 0;
+				}
+			}
+			
+			private function onMapMouseMove(event:MouseEvent):void {
+				var mapPoint:MapPoint = MapControl.toMapFromStage(event.stageX, event.stageY);
+				var gra:Graphic = new Graphic;
+				gra.geometry = WebMercatorUtil.webMercatorToGeographic(mapPoint);
+				this.X = MapPoint(gra.geometry).x.toFixed(6);
+				this.Y = MapPoint(gra.geometry).y.toFixed(6);
+
+				//var screenPoint:Point = new Point(event.localX, event.localY);
+				//var mapPoint:MapPoint =  this.MapControl.toMap(screenPoint);
+				//const llPnt:MapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+				//this.X = llPnt.x;
+				//this.Y = llPnt.y;
+			}
+			
+			private function onTitleBarMouseDown( event : MouseEvent ) : void {
+				// 1. set _window
+				_window = UIComponent( UIComponent( event.currentTarget ));
+				
+				// 2. add mouse move and mouse up event listeners
+				this.systemManager.addEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.addEventListener( MouseEvent.MOUSE_UP, doCommitMove, true );
+				
+				// 3. save offsets
+				_originalPosition = new Point( _window.x, _window.y );
+				_mouseDownPosition = new Point( event.stageX, event.stageY );
+			}
+			
+			private function doMoving( event : MouseEvent ) : void {
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();
+				
+				// 2. calculate new position
+				var positionToMove : Point = new Point( _originalPosition.x + ( event.stageX - _mouseDownPosition.x ),
+					_originalPosition.y + ( event.stageY - _mouseDownPosition.y ) );
+				// 3. move window
+				_window.move( positionToMove.x, positionToMove.y );
+				
+				
+				/* Add in Later
+				this.systemManager.addEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				
+				private function doMoving( event : MouseEvent ) : void {
+				if(event.buttonDown)
+				this.stage.nativeWindow.startMove();
+				*/
+			}
+			
+			private function doCommitMove( event : MouseEvent ) : void {
+				// 1. prevent any other mouse up events to happen
+				event.stopImmediatePropagation();	
+				
+				// 2. remove event listeners
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_MOVE, doMoving, true );
+				this.systemManager.removeEventListener( MouseEvent.MOUSE_UP, doCommitMove , true );
+			}
+			
+			private function button_click():void {
+				System.setClipboard("Latitude/Longitude:"+lblLat.text+", "+lblLon.text+
+									"\nLRS Lambert:"+lblX.text+", "+lblY.text+
+									"\nLiteral Description:"+lblLD.text+
+									"\nReference Post:"+lblRP.text+
+									"\nOffset:"+lblOS.text
+				);
+			}
+			
+			private function ll_click():void {
+				System.setClipboard("Latitude/Longitude:"+lblLat.text+", "+lblLon.text);
+			}
+			
+			private function lrs_click():void {
+				System.setClipboard("LRS Lambert:"+lblX.text+", "+lblY.text);
+			}
+			
+			private function ld_click():void {
+				System.setClipboard("Literal Description:"+lblLD.text);
+			}
+			
+			private function rp_click():void {
+				System.setClipboard("Reference Post:"+lblRP.text+
+									", Offset:"+lblOS.text);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!--		
+		<jfire:LatLongToLrs id="convert"/>
+		<jfire:SnapXYToDatum id="getDatum" />
+		<jfire:GetBestRouteId id="getRoute" />
+		<jfire:XmlObjectToLiteral id="getLD" />
+		<jfire:XmlObjectToRefPost id="getRP" />
+		-->
+		<operations:LatLongToLrs id="convert" />
+		
+		<operations:SnapXYToDatum id="getDatum" />
+		
+		<operations:GetBestRouteId id="getRoute" />
+		
+		<operations:XmlObjectToLiteral id="getLD" />
+		
+		<operations:XmlObjectToRefPost id="getRP" />
+		
+	</fx:Declarations>
+	
+	<fx:Style>
+		#TitleWindow {
+			close-button-skin: Embed("assets/images2/settings.png");
+			closeButtonUpSkin: Embed("assets/images2/settings.png");
+			closeButtonOverSkin: Embed("assets/images2/settings.png");
+			closeButtonDownSkin: Embed("assets/images2/settings.png");
+			closeButtonDisabledSkin: Embed("assets/images2/settings.png");
+		}
+	</fx:Style>
+	
+	<s:TitleWindow id="titleWindow" mouseDown="onTitleBarMouseDown( event )" 
+		title="Locator Widget" width="240">
+		<mx:VBox top="10" paddingLeft="10" paddingBottom="10">
+			
+			<s:Label text="&#13;Latitude/Longitude:" fontWeight="bold" click="ll_click()"/>
+			<s:Label text="Lat: {this.Y}" id="lblLat" click="ll_click()"/>
+			<s:Label text="Lon: {this.X}" id="lblLon" click="ll_click()"/>
+			<s:Label text="&#13;LRS Lambert:" fontWeight="bold"  click="lrs_click()"/>
+			<s:Label text="X: {convert.X}" id="lblX"  click="lrs_click()"/>
+			<s:Label text="Y: {convert.Y}" id="lblY"  click="lrs_click()"/>
+			<s:Label text="&#13;Literal Description:" fontWeight="bold"  click="ld_click()"/>
+			
+			<s:TextArea click="ld_click()" borderVisible="false" height="65" 
+				text="{getLD.LiteralDescription}" id="lblLD" name="lblLD"/>
+			
+			<s:Label text="&#13;Reference Post:" fontWeight="bold" click="rp_click()"/>
+			<s:Label text="{getRP.ReferencePost}" id="lblRP" click="rp_click()"/>
+			<s:Label text="Offset:" fontWeight="bold" click="rp_click()"/>
+			<s:Label text="{getRP.Offset}" id="lblOS" click="rp_click()"/>
+			
+			<s:ComboBox selectedItem="Closest" id="cbOffType"> 
+				<s:ArrayCollection>
+					<fx:String>Positive</fx:String>
+					<fx:String>Closest</fx:String>
+					<fx:String>Negative</fx:String>
+				</s:ArrayCollection>
+			</s:ComboBox>
+			
+			<s:Button id="button"
+			   label="Copy contents to clipboard"
+			   toolTip="Click here to copy the contents of the widget to the OS clipboard."
+			   click="button_click();" />
+		</mx:VBox>
+	</s:TitleWindow >
+</s:Group>

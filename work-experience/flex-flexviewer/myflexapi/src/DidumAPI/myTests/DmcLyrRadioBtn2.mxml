@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	layout="vertical"
+	pageTitle="Dynamic Layer-Radio Btns">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.RadioButton; 
+			import mx.events.ItemClickEvent;
+			
+			
+			private function loadLayerName():void
+			{
+				//dynamicLayer.url = myArrayC;
+				layerPanel.removeAllChildren();
+				
+				//loop through each layer and add as a radiobutton
+				for(var i:uint = 0; i < (dynamicLayer.layerInfos.length); i++) 
+				{
+					var myRdBtn:RadioButton = new RadioButton;  
+					myRdBtn.groupName = "radioBtnGroup";
+					myRdBtn.value = i;
+					myRdBtn.label = dynamicLayer.layerInfos[i].name;
+					layerPanel.addChild(myRdBtn);
+				}
+				
+				//set the visible layer the first radio button
+				radioBtnGroup.selectedValue = 0;
+				dynamicLayer.visibleLayers = new ArrayCollection([0]);
+			}
+			
+			private function radioClickHandler(event:ItemClickEvent):void
+			{
+				// update the visible layers to only show the layer selected
+				dynamicLayer.visibleLayers = new ArrayCollection([event.index]);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:HDividedBox width="100%" height="100%" paddingBottom="0" paddingTop="0" paddingLeft="0" paddingRight="0">
+		<esri:Map id="myMap" logoVisible="false" openHandCursorVisible="false">
+			<esri:extent>
+				<esri:Extent xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25">
+					<esri:SpatialReference wkid="102113"/>
+				</esri:Extent>
+			</esri:extent>
+			<esri:ArcGISDynamicMapServiceLayer id="dynamicLayer" load="loadLayerName();"
+				url="http://testgeonexus/ArcGIS/rest/services/{myURL.selectedItem}/MapServer"/>		
+		</esri:Map>
+		
+		<s:VGroup>
+			<mx:ComboBox id="myURL" selectedIndex="0" horizontalCenter="0">
+				<mx:ArrayList>
+					<fx:String>Basemap/Basemap_dynamic</fx:String>
+					<fx:String>Facilities/PARCEL_SO_V</fx:String>
+					<fx:String>Facilities/BUILDING_SO_V</fx:String>
+					<fx:String>Basemap/Basemap_Overlay</fx:String>
+				</mx:ArrayList>
+			</mx:ComboBox>
+			
+			<mx:Panel id="layerPanel" title="ESRI-Map" width="250" height="685" paddingLeft="10">
+				<mx:RadioButtonGroup id="radioBtnGroup" itemClick="radioClickHandler(event)"/>
+			</mx:Panel>
+		</s:VGroup>	
+	</mx:HDividedBox>	
+	
+</mx:Application>

@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2.1 - May 05, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+	<labels>
+	   <emain>Measure</emain>
+	   <edescriptlabel>Click dumpster to clear map graphicslayer:</edescriptlabel>
+		<epoint>Point</epoint>
+		<epolyline>Polyline</epolyline>
+		<epolygon>Polygon</epolygon>
+		<eextent>Extent</eextent>
+		<eclearlabel>Clear</eclearlabel>
+	</labels>
+</configuration>

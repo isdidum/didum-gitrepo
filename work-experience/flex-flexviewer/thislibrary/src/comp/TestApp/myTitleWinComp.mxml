@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	creationComplete="showInit();">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.layers.GraphicsLayer;
+			
+			import comp.DidumASFile.MinMaxTitleWin;
+			
+			import flash.events.MouseEvent;
+			
+			import mx.effects.Move;
+			import mx.effects.Resize;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			public var myMap:Map;
+			private var myGraphicsLayer:GraphicsLayer = new GraphicsLayer();
+			[Bindable]private var getString:String = "";
+			
+			private var previousHeight:int = 30;
+			private var effResize:Resize;
+			public var myFloatWin:MinMaxTitleWin;
+			
+			//[Embed(source="assets/bluestar16.png")]
+			//[Bindable]public var blueStar16:Class;
+			
+			protected function showInit():void {				
+				var move:Move = new Move();
+				//initial position of widget
+				move.xTo = 50; move.yTo = 430;
+				
+				if(myFloatWin == null) {					
+					// Since reuse of a popup window is a priority, use createPopUp() 
+					//and store the returned object in a variable for later use.
+					myFloatWin = MinMaxTitleWin(PopUpManager.createPopUp(myMap, MinMaxTitleWin, false) as MinMaxTitleWin);					
+					//listen for closeEvent if button is enabled
+					myFloatWin.addEventListener(CloseEvent.CLOSE, closeFW);
+					// listen for minimize/maximize button added
+					myFloatWin.minMaxBtn.addEventListener(MouseEvent.CLICK, 
+						function minimizeFW(event:MouseEvent):void {
+							event.currentTarget;
+						});
+					
+					PopUpManager.centerPopUp(myFloatWin);
+					move.play([myFloatWin]);
+					
+					myFloatWin.useHandCursor = false; 
+					this.useHandCursor = false;
+					myMap.openHandCursorVisible = false
+					myMap.addLayer(myGraphicsLayer,-1);
+					myMap.addEventListener(MapMouseEvent.MAP_CLICK, setMapPoint);
+				}
+			}
+			
+			protected function closeFW(event:CloseEvent):void {					
+				myFloatWin.visible = false;
+				PopUpManager.removePopUp(myFloatWin);
+				PopUpManager.removePopUp(MinMaxTitleWin(event.target));
+			}
+			
+			private function setMapPoint(evt:MapMouseEvent):void {
+				myGraphicsLayer.clear();
+				myGraphicsLayer.add(new Graphic(evt.mapPoint, sms));
+				
+				getString = "X-Coor = " + evt.mapPoint.x.toFixed(3) + "\nY-Coor = " + evt.mapPoint.y.toFixed(3);
+				myTxtLabel.text = getString;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Symbol for where the user clicked -->
+		<esri:SimpleMarkerSymbol id="sms" color="0x00FF00" size="12" style="circle"/>
+	</fx:Declarations>
+	
+	
+		<mx:Label text="Didum's First Widget" color="#000000" fontWeight="bold"/>
+		<mx:Text id="myTxtLabel" width="100%" height="100%" textAlign="center"
+			fontWeight="normal"/>
+	
+</s:Group>

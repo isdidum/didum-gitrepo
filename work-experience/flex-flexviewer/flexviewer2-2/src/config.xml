@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2010 ESRI
+//
+// All rights reserved under the copyright laws of the United States.
+// You may freely redistribute and use this software, with or
+// without modification, provided you include the original copyright
+// and use restrictions.  See use restrictions in the file:
+// <install location>/License.txt
+//
+// Read more about ArcGIS Viewer for Flex 2.2 - http://links.esri.com/flexviewer
+// Modified: Abraham, Didum - April 12, 2011 til present
+////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <title>Iowa Department of Transportation</title>
+    <subtitle>Flexviewer web mapping application</subtitle>
+    <logo>assets/images/logo.png</logo>
+    
+    <!--widgetTextColor,widgetContainerColor,outputHighlightColor,WidgetContainerTitleColor-->
+    <style>
+    <colors>0x333333,0x99C7FF,0xFFFFCC,0x9999FF,0xFFD700</colors>
+    <alpha>0.55</alpha>
+    </style>
+
+    <!-- UI elements -->
+    <widget left="10"  top="50"    config="widgets/Navigation/NavigationWidget.xml" url="widgets/Navigation/NavigationWidget.swf"/>
+    <widget right="-2" bottom="-2" config="widgets/OverviewMap/OverviewMapWidget.xml" url="widgets/OverviewMap/OverviewMapWidget.swf"/>
+    <widget right="20" top="55"    config="widgets/MapSwitcher/MapSwitcherWidget.xml" url="widgets/MapSwitcher/MapSwitcherWidget.swf"/>
+    <widget left="0"   top="0"     config="widgets/HeaderController/HeaderControllerWidget.xml" url="widgets/HeaderController/HeaderControllerWidget.swf"/>
+
+    <map initialextent="-11028401.3495 4783433.524 -9763827.1536 5525789.9431" top="40" level="8"
+		 fullextent="-13888506.9096 2817030.3101 -7452820.9009 6340332.3197" spatialrefence="102113">
+        <basemaps>
+		<!--Basemaps tag only takes cached maps-->
+            <layer label="Basemap" type="tiled" visible="true" alpha="1"
+                   url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+            <layer label="Aerial" type="tiled" visible="false" alpha="1"
+                   url="http://geonexus/ArcGIS/rest/services/AerialImagery/Aerial_Imagery/MapServer"/>         
+            <layer label="Basemap-Overlay" type="tiled" visible="false" alpha="1"
+                   url="http://testgeonexus/ArcGIS/rest/services/Basemap/Basemap_Overlay/MapServer"/>  
+        </basemaps>
+        <operationallayers>
+		<!--OperationLayers takes both cached & dynamic maps-->
+            <layer label="Districts" type="dynamic" visible="false"
+                   url="http://geonexus/ArcGIS/rest/services/Boundaries/TRANS_DISTRICTS_SO/MapServer"/>
+			<layer label="Boundaries" type="dynamic" visible="false"
+                   url="http://geonexus/ArcGIS/rest/services/Boundaries/Boundaries/MapServer"/>
+			<layer label="Flood Inundation" type="dynamic" visible="false"
+                   url="http://testgeonexus/ArcGIS/rest/services/Flooding/FloodingMap/MapServer"/>	   
+        <!--    
+			<layer label="Fires" type="feature" visible="false" alpha="1"
+                   info="widgets/InfoTemplates/SimpleInfoWinWidget.swf"
+                   infoconfig="widgets/InfoTemplates/IWT_Fires.xml"
+                   url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Fire/Sheep/FeatureServer/0"/>
+		-->		   
+        </operationallayers>
+    </map>
+
+    <!-- widgets organized into widget containers that manage close/open etc -->
+    <!-- supported layout property options: horizontal(default)|float|vertical|fix-->
+        
+    <widgetcontainer layout="float">
+
+		<widget label="Enhanced Facilities" preload="closed" left="100" top="55"
+			icon="assets/images/i_facility_black.PNG"
+			config="widgets/DotContainer/FacilityEnhanced/bldgSearchEdWidget.xml"
+			url="widgets/DotContainer/FacilityEnhanced/bldgSearchEdWidget.swf"/>
+			
+        <widget label="Search ERMS" preload="closed" right="30" bottom="30"
+            icon="assets/images/i_bookmark.png"
+            config="widgets/DotContainer/ErmsLocator/ermsWidget.xml"
+            url="widgets/DotContainer/ErmsLocator/ermsWidget.swf"/>
+        
+		<widget label="Enhanced Lidar Locator" preload="closed" left="485" top="78"
+            icon="assets/images/i_lidar2.PNG"
+            config="widgets/DotContainer/LidarIdEnhanced/LidarIdEdWidget.xml"
+            url="widgets/DotContainer/LidarIdEnhanced/LidarIdEdWidget.swf"/>
+        
+		<widget label="Enhanced Imagery Locator" preload="closed" bottom="150" left="70"
+            icon="assets/images/globe.gif"
+			config="widgets/DotContainer/ImageryIdnt/ImgAerialWidget.xml"
+            url="widgets/DotContainer/ImageryIdnt/ImgAerialWidget.swf"/>
+		<!--
+		<widget label="Search/Identify Facilities" preload="closed" left="100" top="55"
+			icon="assets/images/i_facility_black.PNG"
+			config="widgets/DotContainer/FacilityLctr/bldgSearchWidget.xml"
+			url="widgets/DotContainer/FacilityLctr/bldgSearchWidget.swf"/>
+		
+		<widget label="Identify Lidar Locator" preload="closed" left="485" top="75"
+            icon="assets/images/i_lidar2.PNG"
+            config="widgets/DotContainer/LidarIdentify/LidarIdWidget.xml"
+            url="widgets/DotContainer/LidarIdentify/LidarIdWidget.swf"/>
+		
+		<widget label="Identify Location Locator" preload="open" right="35" top="95"
+            icon="assets/images/i_flag.png"
+			url="widgets/DotContainer/WidgetLibrary/LctrWebmapWidget.swf"/>	
+        -->        
+    </widgetcontainer>
+
+</configuration>

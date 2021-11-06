@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2.1 - May 09, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <idntfylyroptn>top</idntfylyroptn>
+    <idntfytolerance>5</idntfytolerance>
+	<labels>
+	   <getdrawtool>Geometry DrawTool</getdrawtool>
+	   <getlabel>Specify search here...</getlabel>
+	   <getdescriptlbl>Use the geometry draw tool to identify features on the map:</getdescriptlbl>
+	   <getdescriptlbl2>Click dumpster to clear map graphicslayer:</getdescriptlbl2>
+	   <getsearch>Search</getsearch>
+	   <gettoggle>Layer</gettoggle>
+	   <getresult>Results</getresult>
+	   <getclearlbl>Clear</getclearlbl>
+	   <mypointlabel>Map Point Identify</mypointlabel>
+	   <polylinelabel>Polyline</polylinelabel>
+       <polygonlabel>Polygon</polygonlabel>
+       <extentlabel>Extent</extentlabel>	   
+	</labels>
+</configuration>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	////////////////////////////////////////////////////////////////////////////////
+	// Developed by Roy, Dylan:dylan.roy@iowa.dot.gov
+	// Updated with BaseWidget contents by Abraham, Didum:didum.abraham@iowa.gov
+	// Version 2.2 - Modified May 18, 2011
+	////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	xmlns:viewer="com.esri.viewer.*"
+	xmlns:WidgetLibrary="widgets.DotContainer.WidgetLibrary.*"
+	xmlns:visual="widgets.DotContainer.WidgetLibrary.gov.iowadot.visual.*" 
+	xmlns:applications="widgets.DotContainer.WidgetLibrary.gov.iowadot.visual.applications.*"
+	layout="absolute" > <!--widgetConfigLoaded="init()"-->
+
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Map;
+
+			
+			private function activateGraphic():void {
+				map.addLayer(myGraphicsLayer);
+			}
+			
+			protected function theWgtOpen(event:Event):void {
+				map.openHandCursorVisible = false;
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = true;
+			}
+
+			protected function theWgtClosed(event:Event):void {
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = false;
+			}
+
+			protected function theWgtMinimized(event:Event):void {
+				if(myGraphicsLayer)
+					myGraphicsLayer.visible = true;
+			}
+
+		]]>
+	</fx:Script>
+
+		
+	<fx:Declarations>
+		<esri:GraphicsLayer id="myGraphicsLayer"/>
+	</fx:Declarations>
+	
+	<viewer:WidgetTemplate id="thewgt" width="340" height="200"	open="theWgtOpen(event)" 
+		closed="theWgtClosed(event)" minimized="theWgtMinimized(event)">
+		
+		<applications:ComplexLocator id="locator" MapControl="{map}" bottom="175" right="125" />
+		
+	</viewer:WidgetTemplate>
+</viewer:BaseWidget>

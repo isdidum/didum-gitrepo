@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MXML COMPONENT
+	ADOBE SYSTEMS INCORPORATED	
+	Copyright 2008 Adobe Systems Incorporated	
+	All Rights Reserved.	
+	NOTICE: Adobe permits you to use, modify, and distribute this file	
+	in accordance with the terms of the license agreement accompanying it.
+-->
+<!--- The default skin class for a Spark SkinnableContainer container.	 
+	@see spark.components.SkinnableContainer	  
+	@langversion 3.0	  
+	@playerversion Flash 10	  
+	@playerversion AIR 1.5	  
+	@productversion Flex 4
+-->
+<s:Skin 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"		
+	xmlns:s="library://ns.adobe.com/flex/spark"		
+	xmlns:fb="http://ns.adobe.com/flashbuilder/2009"	
+	height="100%" width.normal="20"	width.expanded="320" left.collapsed="0"	currentState="normal">	
+	
+	<!--Call to Action Script File (CollapseContainer.as)-->
+	<fx:Metadata>[HostComponent("CollapseContainer")]</fx:Metadata>	
+	
+	<fx:Script fb:purpose="styling">		
+		<![CDATA[			
+			import CollapseContainer;						
+			/**			 
+			 *  @private
+			 */			
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void	{				
+				
+			}
+			/** 
+			 *	Push backgroundColor and backgroundAlpha directly.				
+			 *	Handle undefined backgroundColor by hiding the background object.				
+			 */
+			if (isNaN(getStyle("backgroundColor")))	{					
+				background.visible = false;				
+			} else {
+				background.visible = true;
+				bgFill.color = getStyle("backgroundColor");
+				bgFill.alpha = getStyle("backgroundAlpha");				
+			}								
+			
+			super.updateDisplayList(unscaledWidth, unscaledHeight);			
+			}		
+		]]>	
+	</fx:Script>	
+	
+	<s:states>		
+		<s:State name="normal" />		
+		<s:State name="disabled" />		
+		<s:State name="collapsed" />		
+		<s:State name="expanded" />	
+	</s:states>	
+	
+	<s:transitions>
+		<s:Transition fromState="normal" toState="expanded" autoReverse="true">
+			<s:Parallel>
+				<s:Resize target="{this}" duration="200" />
+				<s:Fade target="{contentGroup}"	duration="200" startDelay="200" />
+			</s:Parallel>		
+		</s:Transition>		
+		
+		<s:Transition fromState="expanded" toState="normal" autoReverse="true"> 			
+			<s:Resize target="{this}" duration="200" />
+		</s:Transition>	</s:transitions>	
+	
+		<!--- Defines the appearance of the SkinnableContainer class's background. -->	
+		<s:Rect id="background"	left="0" right="0" top="0" bottom="0">
+			<s:fill>
+				<!--- @private -->
+				<s:SolidColor id="bgFill" color="#FFFFFF" />
+			</s:fill>
+		</s:Rect>	
+		<!--		
+			Note: setting the minimum size to 0 here so that changes to the host component's		
+			size will not be thwarted by this skin part's minimum size.   This is a compromise,		
+			more about it here: http://bugs.adobe.com/jira/browse/SDK-21143	
+		-->	
+		<!--- 
+			@copy spark.components.SkinnableContainer#contentGroup 
+		-->	
+	<s:Group id="contentGroup" left="0" right="20" top="0" bottom="0" 
+		minWidth="0" minHeight="0" includeIn="expanded" width.normal="0" 
+		visible="{currentState=='expanded'}">		
+			<s:layout>
+				<s:BasicLayout />
+			</s:layout>	
+		</s:Group>	
+	<s:Group verticalCenter="0"	right="0" height="100%"	width="20" buttonMode="true" 
+		click="(this.currentState == 'expanded' ? this.currentState = 'normal' : this.currentState = 'expanded')">
+		<s:Rect top="0"	bottom="0" right="0" left="0">
+			<s:fill>
+				<s:SolidColor color="0x4D94DB" alpha="0.6" />
+			</s:fill>
+			<s:stroke>
+				<s:SolidColorStroke color="0xF0F8FF" weight="2" /> 
+			</s:stroke>		
+		</s:Rect> <s:Label rotationZ="90" text="Table of Contents" verticalCenter="0" horizontalCenter="0"
+			fontWeight="bold" color="0xffffff" />
+	</s:Group>
+</s:Skin> 

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" ?>
+<!--
+    ////////////////////////////////////////////////////////////////////////////////
+    // Developed by Abraham, Didum:didum.abraham@iowa.gov
+    // Version 2.2 June 03, 2011
+    ////////////////////////////////////////////////////////////////////////////////
+-->
+<configuration>
+    <identifylayeroption>top</identifylayeroption>
+    <identifytolerance>5</identifytolerance>
+    <labels>
+        <slectdrawtoollabel>Geometry DrawTool</slectdrawtoollabel>
+        <resultslabel>Results</resultslabel>
+        <descriptionlabel>Use the geometry draw tool to identify features on the map:</descriptionlabel> 
+        <descriptlabel>Click dumpster to clear map graphicslayer:</descriptlabel>
+        <pointlabel>Map Point Identify</pointlabel>
+        <polylinelabel>Polyline</polylinelabel>
+        <polygonlabel>Polygon</polygonlabel>
+        <extentlabel>Extent</extentlabel>
+        <clearlabel>Clear</clearlabel>
+        <loadinglabel>Loading...</loadinglabel>
+    </labels>
+</configuration>

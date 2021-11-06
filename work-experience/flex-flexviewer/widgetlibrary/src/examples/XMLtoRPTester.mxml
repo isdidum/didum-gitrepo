@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:jfire="gov.iowadot.jetfire.operations.*"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   pageTitle="Example - Reference Post Tester"
+			   minWidth="955" minHeight="600">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<jfire:XmlObjectToRefPost id="toRP">
+		</jfire:XmlObjectToRefPost>
+	</fx:Declarations>
+	<s:VGroup top="300" left="200">
+		<s:HGroup>
+			<s:Label text="Enter RouteID:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+			<s:TextInput id="inputRouteId" text="1000002"/>
+		</s:HGroup>
+		<s:HGroup>
+			<s:Label text="Enter XML Object:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+			<s:TextInput id="inputDatum" text=""/>
+			<s:Button x="371" y="159" label="Enter" click="{toRP.XmlObject=inputDatum.text;toRP.RouteId=parseInt(inputRouteId.text)}"/>
+		</s:HGroup>
+		<mx:HRule width="100%" height="5" strokeColor="#00000F" />
+		<s:Label text="Reference Post:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+		<s:TextArea id="retVal1" x="121" y="189" width="320" height="50" borderVisible="false" enabled="true"  
+					text="{toRP.ReferencePost}"/>
+		<s:Label text="Offset:" width="150" height="20" fontSize="16" fontFamily="Georgia"/>
+		<s:TextArea id="retVal2" x="121" y="189" width="320" height="50" borderVisible="false" enabled="true"  
+					text="{toRP.Offset}"/>
+	</s:VGroup>
+</s:Application>

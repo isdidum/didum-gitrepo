@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+	xmlns:esri="http://www.esri.com/2008/ags"
+	pageTitle="Flex Contracts Search">
+	
+	<!-- Author: Didum Abraham
+	Credit To: ERSI 
+	Purpose: This program allows a user to search county fields and bridges.  When a user clicks the find button
+		for county search, it zoom to the county provided in the Input TextArea.  This is also true for a bridge
+		find button. When a user clicks on the map, it speeds out map coordinates in a rectangular TextArea with
+		the coordinates converted to degrees-minutes-seconds in the longitudinal and lateral directions
+	-->
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.FindEvent;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.tasks.supportClasses.FindParameters;
+			import com.esri.ags.tasks.supportClasses.FindResult;
+			import com.esri.ags.tools.NavigationTool;
+			import com.esri.ags.utils.GraphicUtil;
+			import com.esri.ags.utils.WebMercatorUtil;
+			
+			import mx.charts.chartClasses.StackedSeries;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.TextArea;
+			
+			
+			private function onMapClick(event:MapMouseEvent):void {
+				var latLng:MapPoint = WebMercatorUtil.webMercatorToGeographic(event.mapPoint) as MapPoint;
+				var myTxtArea:TextArea = new TextArea();
+				var sgX:String, sgY:String, myLabel:String = "Map Coordinates";
+				
+				if(Math.round(latLng.y) > 0.0){
+					sgX = " ";
+				}else{
+					sgX = "-";
+				}
+				var iDeg:Number = Math.floor(Math.abs(latLng.y));	
+				var iXrem:Number = (Math.abs(latLng.y) % 1);			
+				var iTemp:Number = Math.abs((iXrem*60.0) % 1);		 
+				var iMin:Number = Math.floor(Math.abs(iXrem*60.0));
+				var iSec:Number = Math.abs((iTemp*60.0));
+				
+				trace(" "); //trace function works only in debug mode
+				trace("[iDeg, iMin, iSec] = {" + sgX + ""+ iDeg +"<font face='\GG Superscript\'>o</font> "
+					+ iMin +"\' "+ iSec.toFixed(2) +"\"}");
+				
+				if(Math.round(latLng.x) > 0.0){
+					sgY = " ";
+				}else{
+					sgY = "-";
+				}			
+				var jDeg:Number = Math.floor(Math.abs(latLng.x));
+				var jYrem:Number = (Math.abs(latLng.x) % 1);			
+				var jTemp:Number = Math.abs((jYrem*60.0) % 1);		 
+				var jMin:Number = Math.floor(Math.abs(jYrem*60.0));
+				var jSec:Number = Math.abs((jTemp*60.0));
+				trace("[jDeg, jMin, jSec] = {" + sgY + ""+ jDeg +"<font face='\GG Superscript\'>o</font> "
+					+ jMin +"\' "+ jSec.toFixed(2) +"\"}");
+					
+				// overrides TextArea parameters
+				reSumTxtArea.alpha = 1.0;
+				reSumTxtArea.htmlText =  "<u><b>MAP COORDINATES</b></u>\n(x, y) = ("+ event.mapPoint.x.toFixed(2) +", "+ event.mapPoint.y.toFixed(2) 
+					+")\nLatitude = "+ latLng.y.toFixed(5) +"\nLongitude = "+ latLng.x.toFixed(5) 
+					+"\n\n<u><b>DEGREES-MINUTES-SECONDS</b></u>" 
+					+ "\nLatitude = " + sgX + ""+ iDeg +"<font face='\GG Superscript\'>o</font>  "+ iMin +"\'  "+ iSec.toFixed(5) +"\" " 
+					+ "\nLongitude = " + sgY + ""+ jDeg +"<font face='\GG Superscript\'>o</font>  "+ jMin +"\'  "+ jSec.toFixed(5) +"\" ";
+				//}
+			}
+			
+			private function doFindCo():void {
+				var FindParamsCo:FindParameters = new FindParameters();
+				FindParamsCo.contains = true;
+				FindParamsCo.layerIds = [48];
+				FindParamsCo.outSpatialReference = myMap.spatialReference;
+				FindParamsCo.returnGeometry = true;
+				FindParamsCo.searchFields = ["CO_NAME", "UKEY"];
+				FindParamsCo.searchText = findTxtCo.text;
+				
+				findTaskCo.execute(FindParamsCo);
+			}
+			
+			private function findHandlerCo(event:FindEvent):void {
+				myGraphicsLayer.clear();
+				
+				//resultSummary.text = "Results found: " + event.findResults.length;				
+				myGraphicsLayer.symbol = sfsFindCo;
+				
+				var resultCount:int = event.findResults.length;
+				
+				if (resultCount == 0) {
+					Alert.show("No county found. Please change your search.");
+				} else {
+					// add feature as graphic to graphics layer
+					for (var i:int = 0; i < resultCount; i++) {
+						var graphic:Graphic = FindResult(event.findResults[i]).feature;
+						graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+						myGraphicsLayer.add(graphic);
+					}
+					
+					// zoom to extent of all features
+					var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+					var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+					myMap.extent = graphicsExtent.expand(1.4); // zoom out a little, was .expand(1.1)
+				}
+			}
+			
+			private function failedEx():void {
+				Alert.show("Unable to load data! \nCheck to see if url is active");
+			}
+			
+			private function doFindBr():void {
+				var FindParamsBr:FindParameters = new FindParameters();
+				FindParamsBr.contains = true;
+				FindParamsBr.layerIds = [0];
+				FindParamsBr.outSpatialReference = myMap.spatialReference;
+				FindParamsBr.returnGeometry = true;
+				FindParamsBr.searchFields = ["FHWANUM"];
+				FindParamsBr.searchText= findTxtBr.text;
+				
+				findTaskBr.execute(FindParamsBr);
+			}
+			
+			private function findHandlerBr(event:FindEvent):void {
+				myGraphicsLayer.clear();
+				
+				//resultSummary.text = "Results found: " + onMapClick(1); //event.findResults.length;
+				myGraphicsLayer.symbol = slsFindBr;
+				
+				var resultCount:int = event.findResults.length;
+				
+				if (resultCount == 0) {
+					Alert.show("No bridge found. Please change your search.");
+				} else {
+					// add feature as graphic to graphics layer
+					for (var i:int = 0; i < resultCount; i++) {
+						var graphic:Graphic = FindResult(event.findResults[i]).feature;
+						graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+						myGraphicsLayer.add(graphic);
+					}
+					
+					// zoom to extent of all features
+					var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+					var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+					myMap.extent = graphicsExtent.expand(40.5); // zoom out a little
+				}
+			}
+			
+			private function getCleanGraphic(): void {
+				myGraphicsLayer.clear();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!-- special tags -->
+	<fx:Declarations>
+		<esri:Extent id="myIniExtent" xmin="-10853631.07" ymin="4792323.73" xmax="-9933940.75" ymax="5518781.25" spatialReference="{new SpatialReference(102113)}"/>
+		
+		<!-- Symbol for Find Result as Polygon -->
+		<esri:SimpleFillSymbol id="sfsFindCo" alpha="0.10" style="solid">
+			<esri:SimpleLineSymbol width="5" color="0x00FF00" style="dashdot"/>
+		</esri:SimpleFillSymbol>
+		
+		<!-- Symbol for Find Result as Polyline -->
+		<esri:SimpleLineSymbol id="slsFindBr" alpha="0.50" width="10" color="0x0000FF" style="solid"/>			
+		
+		<!-- Find Tasks -->
+		<esri:FindTask id="findTaskCo" showBusyCursor="true" executeComplete="findHandlerCo(event)"
+			url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer"/>
+		<!-- this line is placed in doFindCo() as ActionScript
+		<esri:FindParameters id="FindParamsCo" contains="true" layerIds="[48]"
+			outSpatialReference="{myMap.spatialReference}" returnGeometry="true"
+			searchFields="[CO_NAME, UKEY]" searchText="{findTxtCo.text}"/>
+		-->
+		<esri:FindTask id="findTaskBr" showBusyCursor="true" executeComplete="findHandlerBr(event)" fault="failedEx()" 
+			url="http://geonexus/ArcGIS/rest/services/GIMS_History/STRUC_CONTROL_XY_SO_V/MapServer"/>
+		<!-- this line is placed in doFindBr() as ActionScript
+		<esri:FindParameters id="FindParamsBr" contains="true" layerIds="[0]"
+			outSpatialReference="{myMap.spatialReference}" returnGeometry="true"
+			searchFields="[FHWANUM]" searchText="{findTxtBr.text}"/>
+		-->
+		<!--navigation tool-->
+		<esri:NavigationTool id="navTool" map="{myMap}"/>
+		
+	</fx:Declarations>
+	
+	<!-- Left Panel -->
+	<s:Panel id="leftPanel" height="100%" color="0x3300FF" title="Search Map Contents" borderVisible="false"
+		backgroundColor="0xefefef" direction="ltr" left="5" right="5" bottom="5" top="2.5">
+		
+		<!--Left County Container-->
+		<s:BorderContainer width="25%" height="40" backgroundColor="0x999999" borderVisible="false" 
+			left="0" right="0" top="5">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+			</s:layout>
+			<s:Label text="County" color="0x006699"/>
+			<s:TextInput id="findTxtCo"	enter="doFindCo()" maxWidth="400" text="story" color="0x000000"/>
+			<s:Button click="doFindCo()" label="Find" color="0x000000"/>
+		</s:BorderContainer>
+		
+		<!--Left Bridge Container-->
+		<s:BorderContainer width="25%" height="40" backgroundColor="0x999999" borderVisible="false"
+			left="0" right="0" top="65">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+			</s:layout>
+			<s:Label text="Bridge" color="0x006699"/>
+			<s:TextInput id="findTxtBr" enter="doFindBr()" maxWidth="400" text="5110" color="0x000000"/>
+			<s:Button click="doFindBr()" label="Find" color="0x000000"/>
+		</s:BorderContainer>
+		
+		<!--Left Bridge Locations Container
+		<s:BorderContainer width="25%" height="40" backgroundColor="0x999999" borderVisible="false"
+			left="0" right="0" top="125" color="0x006699">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+			</s:layout>
+			<s:Label text="More Bridges"/>
+			<s:DropDownList id="myDropMenu" selectedIndex="6">
+				<s:dataProvider>
+					<s:ArrayList>
+						<fx:String>4144</fx:String>
+						<fx:String>6045</fx:String>
+						<fx:String>181880</fx:String>
+						<fx:String>601925</fx:String>
+						<fx:String>608860</fx:String>
+						<fx:String>198280</fx:String>
+					</s:ArrayList>
+				</s:dataProvider>
+			</s:DropDownList>
+		</s:BorderContainer>
+		-->
+		<!-- ResultSummary -->
+		<mx:TextArea id="reSumTxtArea" width="25%" height="28%" color="0x000000" alpha="0.45"
+			text="Click on map graphic to see map information contents in this rectangular text window."
+			editable="false" left="0" right="0" top="125" borderColor="0x999999" borderStyle="solid" />	
+				
+	</s:Panel>
+	
+	<!-- Center Panel -->
+	<s:Panel id="centerPanel" height="100%" color="0x3300FF" title="Web Map Application of Contracts Search" 
+		borderVisible="false" backgroundColor="0xFFFFFF" direction="ltr" left="325" right="0" bottom="5" top="2.5">
+		<!--
+		<s:Label id="resultSummary" height="15"/>
+		-->
+		<mx:VDividedBox width="100%" height="100%">
+			<esri:Map id="myMap" mapClick="onMapClick(event)" extent="{myIniExtent.expand(1.0)}" 
+				logoVisible="false" openHandCursorVisible="false">
+				<esri:ArcGISTiledMapServiceLayer url="http://geonexus/ArcGIS/rest/services/Basemap/Basemap/MapServer" 
+					visible="{bb.selectedIndex == 0}" />
+				<esri:ArcGISImageServiceLayer url="http://geonexus/ArcGIS/rest/services/Imagery_Statewide/NAIP2008_Mercator/ImageServer" 
+					visible="{bb.selectedIndex == 1}" />
+				<esri:ArcGISDynamicMapServiceLayer url="http://geonexus/ArcGIS/rest/services/GIMS_History/STRUC_CONTROL_XY_SO_V/MapServer" 
+					visible="{bb.selectedIndex == 2}" />
+				<esri:GraphicsLayer id="myGraphicsLayer"/>
+			</esri:Map>
+		</mx:VDividedBox>
+		
+		<!--Navigation ToolBar Buttons-->
+		<s:controlBarLayout>
+			<s:HorizontalLayout gap="10" horizontalAlign="center" paddingBottom="7"
+				paddingLeft="10" paddingRight="10" paddingTop="7"/>
+		</s:controlBarLayout>
+		
+		<s:controlBarContent>
+			<s:HGroup gap="10">
+				<s:Button click="navTool.zoomToPrevExtent()"
+					enabled="{!navTool.isFirstExtent}"
+					label="Previous Extent"/>
+				<s:Button click="navTool.zoomToNextExtent()"
+					enabled="{!navTool.isLastExtent}"
+					label="Next Extent"/>
+			</s:HGroup>
+			<s:Button click="navTool.zoomToFullExtent()" label="Full Extent"/>
+			<s:Button enabled="true" click="getCleanGraphic()" label="Clear Graphic"/>
+		</s:controlBarContent>
+		
+	</s:Panel>
+	<s:ButtonBar id="bb" right="5" top="5" requireSelection="true">
+		<s:dataProvider>
+			<s:ArrayList>
+				<fx:String>Basemap</fx:String>
+				<fx:String>Imagery</fx:String>
+				<fx:String>Gims History</fx:String>
+			</s:ArrayList>
+		</s:dataProvider>
+	</s:ButtonBar>
+</s:Application>
