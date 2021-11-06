@@ -39,11 +39,3 @@
 **/java-experiment/iexperiment/**/bin
 **/java-experiment/jdbc/**/bin
 
-**/work-experiment/flex-flexviewer/myflexapi/.settings
-.actionScriptProperties
-.flexProperties
-.project
-bin-debug
-bin-release
-html-template
-
