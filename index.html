@@ -33,24 +33,29 @@
         position:absolute;
         display: inline-block;
         width: 200px; height: 55px;
-        border: 1px solid skublue;
+        border: 1px solid #abc;
         background-image: linear-gradient(#aaa, #abc, #ddd);
         right: 50px;
-        top: 20px;
+        top: 19px;
         z-index: 5;
       }
       .lgroup {
         position:relative; width:450px;
       }
       .copyright {
-          border-left:5px solid skyblue;
-          border-top:5px solid skyblue;
-          padding-left: 5px;
-          position: relative;
-          margin:10px auto 0px auto;
-          width: 400px;
-          background: lightgrey;
-          font-size: 0.8em;
+        border-left:5px solid skyblue;
+        border-top:5px solid skyblue;
+        padding-left: 5px;
+        position: relative;
+        margin:10px auto 0px auto;
+        width: 400px;
+        background: lightgrey;
+        font-size: 0.8em;
+        
+        transition-property: background;
+        transition-duration: 2s;
+        transition-timing-function: linear;
+        transition-delay: 1s;
       }
       details {
         border: 1px solid #aaa;
@@ -78,7 +83,7 @@
         color: white;
       }
       .copyright:hover{
-        background-color: skyblue;
+        background: skyblue;
       }
     </style>
     <!-- Bootstrap CSS -->
