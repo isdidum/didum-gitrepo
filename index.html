@@ -13,10 +13,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes shrink-to-fit=yes" />
     
     <style>
+      .rrr-arcs {
+        border: 2px solid #000;
+        position:absolute;
+        right: 200px;
+        display: inline-block;
+        min-width: 9em;
+        min-height: 9em;
+        padding: 0.5em;
+        border-radius: 50%;
+        border-left-color: transparent;
+        border-right-color: transparent;
+      }
       .listhome {
         background-image: linear-gradient(#aaa, #ccc, #ddd);
       }
-      .reference-repo{
+      .reference-repo {
         position:absolute;
         display:inline-block;
         right: 200px;
@@ -81,7 +93,9 @@
     <!-- <div style="border:1px solid blue; position:relative; width:300px; height:200px;">This is a test for git-pages</div> -->
     <div class="jumbotron">
       <h1 class="display-4">Hello, all!</h1>
-      <span class="reference-repo">Repository Reference Route (RRR): <u><i>didum-gitrepo</i></u></span>
+      <div class="rrr-arcs">
+        <span class="reference-repo">Repository Reference Route (RRR): <u><i>didum-gitrepo</i></u></span>
+      </div>
       <p class="lead">
         Warm welcome to you all for paying a visit to Didum's Github Repository.<br/>
         This is a sample webpage configuration for Github-Analytics Cloud Class.
