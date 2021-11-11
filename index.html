@@ -25,6 +25,32 @@
           background: lightgrey;
           font-size: 0.8em;
       }
+      details {
+          border: 1px solid #aaa;
+          border-radius: 4px;
+          padding: .5em .5em 0;
+          color: black;
+      }
+      summary {
+          font-weight: normal;
+          margin: -.5em -.5em 0;
+          padding: .5em;
+      }
+      details[open] {
+          padding: 0.5em;
+          position:relative;
+      }
+      details[open] summary {
+          border-bottom: 1px solid #aaa;
+          margin-bottom: .5em;
+      }
+      summary:hover {
+          background-color: #ddd;
+          color: white;
+      }
+      .copyright:hover{
+          background-color: skyblue;
+      }
     </style>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZW9Y5TS544"></script>
