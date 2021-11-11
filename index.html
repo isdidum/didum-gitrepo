@@ -64,6 +64,11 @@
         color: black;
         width: 1000px;
         margin-left:100px;
+        
+        transition-property: width;
+        transition-duration: 2s;
+        transition-timing-function: linear;
+        transition-delay: 1s;
       }
       summary {
         font-weight: normal;
@@ -73,10 +78,12 @@
       details[open] {
         padding: 0.5em;
         position:relative;
+        width:1000px;
       }
       details[open] summary {
         border-bottom: 1px solid #aaa;
         margin-bottom: .5em;
+        width:1000px;
       }
       summary:hover {
         background-color: #ddd;
@@ -117,7 +124,7 @@
       </p>
       <p>
         <a href="isdidum.html">Click here</a> to go to next page.<br/>
-        <a href="https://www.github.com/isdidum" target="_self">Repository homepage.</a> This link will take you to the homepage.
+        <a href="https://www.github.com/isdidum" target="_self">Click Repository</a> to be redirected to the homepage.
       </p>
       
       <ul class="list-groups lgroup">
