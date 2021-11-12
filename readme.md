@@ -11,9 +11,9 @@ a basic calculator with simple functionalities, an enhanced calculator version w
     The source code will be made available upon completion of projects
     </p>
     
-    <p> Take a tour to my repository reference route (gh-pages)<br/>
-        Visit https://isdidum.github.io/didum-gitrepo/
-    </p>
+<p> Take a tour to my repository reference route (gh-pages)<br/>
+    Visit https://isdidum.github.io/didum-gitrepo/
+</p>
 
 <p>
     This file has been generated for documentation purposes<br/>
