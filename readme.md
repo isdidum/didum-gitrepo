@@ -1,6 +1,6 @@
 
-###### [------------------]
-**Welcome to Didum's Repository | didum-gitrepo**
+[------------------]
+**Welcome to Didum's Repository | didum-gitrepo**<br/>
 *Created Saturday, 08/15/2015*
 
 ---
