@@ -10,9 +10,9 @@ Greetings,
 a basic calculator with simple functionalities, an enhanced calculator version with more functionalities, & other<br/> related projects which were implemeneted primarily with web based technologies.<br/>
     The source code will be made available upon completion of projects.
     </p>
-    
-<p> Take a tour to my repository reference route (gh-pages)<br/>
-    Visit https://isdidum.github.io/didum-gitrepo/
+
+<p> 
+    Take a tour to [visit](https://isdidum.github.io/didum-gitrepo/) my repository reference route (gh-pages)
 </p>
 
 <p>
