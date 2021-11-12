@@ -10,7 +10,7 @@ a basic calculator with simple functionalities, an enhanced calculator version w
 The source code will be made available upon completion of projects.
 
 
-Take a tour to [visit](https://isdidum.github.io/didum-gitrepo/) my repository reference route (gh-pages).
+Take a tour to [visit](https://isdidum.github.io/didum-gitrepo/) my repository reference page (gh-pages).
 
 This file has been generated for documentation purposes<br/>
 Revised & updated on Thursday, November 11, 2021
