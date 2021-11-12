@@ -13,7 +13,7 @@ The source code will be made available upon completion of projects.
 Take a tour to [visit](https://isdidum.github.io/didum-gitrepo/) my repository reference page (gh-pages).
 
 This file has been generated for documentation purposes<br/>
-Revised & updated on Thursday, November 11, 2021
+Revised & updated on Friday, November 12, 2021
 
 `------------------`<br/>
 *Prepared by Didum* <br/>
