@@ -15,6 +15,6 @@ Take a tour to [visit](https://isdidum.github.io/didum-gitrepo/) my repository r
 This file has been generated for documentation purposes<br/>
 Revised & updated on Thursday, November 11, 2021
 
-_______________________<br/>
+---
 Prepared by Didum <br/>
 (iusc13@hushmail.com)
