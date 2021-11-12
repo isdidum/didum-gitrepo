@@ -1,7 +1,7 @@
 
-[------------------]
-#### Welcome to Didum's Repository | didum-gitrepo
-#### Created Saturday, 08/15/2015
+###### [------------------]
+###### Welcome to Didum's Repository | didum-gitrepo
+###### Created Saturday, 08/15/2015
 
 ---
 
