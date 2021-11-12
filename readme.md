@@ -8,7 +8,9 @@ Greetings,
 
 <p>This current repository, didum-gitrepo, contains graphical snapshot representations of individual side projects:<br/>
 a basic calculator with simple functionalities, an enhanced calculator version with more functionalities, & other<br/> related projects which were implemeneted primarily with web based technologies.<br/>
-    The source code will be made available upon completion of projects.</p>
+    The source code will be made available upon completion of projects.<br/>
+    Take a tour at https://isdidum.github.io/didum-gitrepo/ <br/>
+    </p>
 
 <p>
     This file has been generated for documentation purposes<br/>
