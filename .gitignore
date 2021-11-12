@@ -38,4 +38,3 @@
 # ignores all bin-folders
 **/java-experiment/iexperiment/**/bin
 **/java-experiment/jdbc/**/bin
-
