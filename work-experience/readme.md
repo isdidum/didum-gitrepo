@@ -11,7 +11,7 @@ There, I worked primarily with [ArcGIS Products](https://www.esri.com/en-us/arcg
 [Visit](https://isdidum.github.io/didum-gitrepo/) my API information page (gh-pages).
 
 This file has been generated for documentation purposes<br/>
-Revised & updated on Thursday, November 11, 2021
+Revised & updated on Saturday, November 20, 2021
 
 
 `------------------`<br/>
